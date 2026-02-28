@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<extension key="nl.onvergetelijk.drupal" type="module">
+  <file>drupal</file>
+  <name>nl.onvergetelijk.drupal</name>
+  <description>Configure drupal name, email and sync</description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Richard van Oosterhout</author>
+    <email>webteam@onvergetelijk.nl</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page">https://www.onvergetelijk.nl</url>
+    <url desc="Documentation">https://www.onvergetelijk.nl</url>
+    <url desc="Support">https://www.onvergetelijk.nl</url>
+    <url desc="Licensing">https://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2024-06-19</releaseDate>
+  <version>1.0</version>
+  <develStage>alpha</develStage>
+  <compatibility>
+    <ver>5.76</ver>
+  </compatibility>
+  <comments>Configure drupal name, email and sync</comments>
+  <classloader>
+    <psr0 prefix="CRM_" path="."/>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
+  <civix>
+    <namespace>CRM/drupal</namespace>
+    <format>23.02.1</format>
+    <angularModule>crmdrupal</angularModule>
+  </civix>
+  <mixins>
+    <mixin>mgd-php@1.0.0</mixin>
+    <mixin>setting-php@1.0.0</mixin>
+    <mixin>smarty-v2@1.0.1</mixin>
+  </mixins>
+</extension>

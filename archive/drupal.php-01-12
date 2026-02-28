@@ -1,0 +1,2107 @@
+<?php
+
+require_once 'drupal.civix.php';
+
+use CRM_Drupal_ExtensionUtil as E;
+
+/**
+ * Implements hook_civicrm_config().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_config/
+ */
+function drupal_civicrm_config(&$config): void {
+  _drupal_civix_civicrm_config($config);
+}
+
+/**
+ * Implements hook_civicrm_install().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_install
+ */
+function drupal_civicrm_install(): void {
+  _drupal_civix_civicrm_install();
+}
+
+/**
+ * Implements hook_civicrm_enable().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_enable
+ */
+function drupal_civicrm_enable(): void {
+  _drupal_civix_civicrm_enable();
+}
+
+function drupal_civicrm_configure($contactid, $displayname, $ditjaar_array, $array_allpart_ditjaar) {
+
+    $crm_externalid = 'iets';
+
+    $extdebug = 2;          // 1 = basic // 2 = verbose // 3 = params / 4 = results
+    $apidebug = FALSE;
+
+    $extwrite = 1;
+
+    $contact_id     =   $contactid;
+    $displayname    =   $displayname;
+    $ditjaar_array  =   $ditjaar_array;
+    $allpart_array  =   $allpart_array;
+    $eventrollen    =   $eventrollen_array;
+
+    $ditjaar_pos_kampfunctie    = $allpart_array['result_allpart_pos_kampfunctie'];
+    $ditjaar_pos_kampkort       = $allpart_array['result_allpart_pos_kampkort'];
+
+//  return; // if not, get out of here
+
+    if ($contactid > 0 AND $ditjaar_array) {
+
+        ###################################################################################################
+        wachthond($extdebug,1, "########################################################################");
+        wachthond($extdebug,1, "### ACL - START ACL CHECK VOOR $displayname $ditjaar_pos_kampfunctie $ditjaar_pos_kampkort", "[cid: $contact_id]");
+        wachthond($extdebug,1, "########################################################################");     
+        ###################################################################################################
+
+    } else {
+        wachthond($extdebug,4, "civicrm_custom",            $groupID);
+        return; // if not, get out of here
+    }    
+
+    wachthond($extdebug,3, "ditjaar_array",     $ditjaar_array);
+    wachthond($extdebug,3, "allpart_array",     $allpart_array);
+    wachthond($extdebug,3, "eventrollen_array", $eventrollen_array);
+
+    $ditjaardeelyes         =   $ditjaar_array['ditjaardeelyes'];
+    $ditjaardeelnot         =   $ditjaar_array['ditjaardeelnot'];
+    $ditjaardeelmss         =   $ditjaar_array['ditjaardeelmss'];
+    $ditjaardeelstf         =   $ditjaar_array['ditjaardeelstf'];
+    $ditjaardeeltst         =   $ditjaar_array['ditjaardeeltst'];
+    $ditjaardeeltxt         =   $ditjaar_array['ditjaardeeltxt'];
+    $ditjaarleidyes         =   $ditjaar_array['ditjaarleidyes'];
+    $ditjaarleidnot         =   $ditjaar_array['ditjaarleidnot'];
+    $ditjaarleidmss         =   $ditjaar_array['ditjaarleidmss'];
+    $ditjaarleidstf         =   $ditjaar_array['ditjaarleidstf'];
+    $ditjaarleidtst         =   $ditjaar_array['ditjaarleidtst'];
+    $ditjaarleidtxt         =   $ditjaar_array['ditjaarleidtxt'];
+
+    $ditjaar_pos_part_id                = $allpart_array['result_allpart_pos_part_id'];
+    $ditjaar_pos_deel_part_id           = $allpart_array['result_allpart_pos_deel_part_id'];
+    $ditjaar_pos_leid_part_id           = $allpart_array['result_allpart_pos_leid_part_id'];
+
+    $ditjaar_pos_event_id               = $allpart_array['result_allpart_pos_event_id'];
+    $ditjaar_pos_deel_event_id          = $allpart_array['result_allpart_pos_deel_event_id'];
+    $ditjaar_pos_leid_event_id          = $allpart_array['result_allpart_pos_leid_event_id'];
+
+    $ditjaar_pos_event_type_id          = $allpart_array['result_allpart_pos_event_type_id'];
+    $ditjaar_pos_deel_event_type_id     = $allpart_array['result_allpart_pos_deel_event_type_id'];
+    $ditjaar_pos_leid_event_type_id     = $allpart_array['result_allpart_pos_leid_event_type_id'];
+
+    $ditjaar_pos_part_status_id         = $allpart_array['result_allpart_pos_part_status_id'];
+    $ditjaar_pos_deel_part_status_id    = $allpart_array['result_allpart_pos_deel_part_status_id'];
+    $ditjaar_pos_leid_part_status_id    = $allpart_array['result_allpart_pos_leid_part_status_id'];
+
+    $ditjaar_pos_kampfunctie            = $allpart_array['result_allpart_pos_kampfunctie'];
+    $ditjaar_pos_deel_kampfunctie       = $allpart_array['result_allpart_pos_deel_kampfunctie'];
+    $ditjaar_pos_leid_kampfunctie       = $allpart_array['result_allpart_pos_leid_kampfunctie'];
+
+    $ditjaar_pos_kampkort               = $allpart_array['result_allpart_pos_kampkort'];
+    $ditjaar_pos_deel_kampkort          = $allpart_array['result_allpart_pos_deel_kampkort'];
+    $ditjaar_pos_leid_kampkort          = $allpart_array['result_allpart_pos_leid_kampkort'];
+
+    wachthond($extdebug,2, "ditjaar_pos_kampfunctie",   $ditjaar_pos_kampfunctie);
+    wachthond($extdebug,2, "ditjaar_pos_kampkort",      $ditjaar_pos_kampkort);
+
+    $profileprivacy         = array(286000);
+    $today_datetime         = date("Y-m-d H:i:s");
+
+    $extdrupal              = 1;
+    $extwrite               = 1;
+    
+    if ($extdrupal == 1 AND in_array($groupID, $profileprivacy)) {
+
+        wachthond($extdebug,1, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.X START DRUPAL ACCOUNT INFO & REPAIR", "[groupID: $groupID] [op: $op]");
+        wachthond($extdebug,1, "########################################################################");
+
+        wachthond($extdebug,2, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.1 - CHECK IF THE CONNECTED DRUPAL ACCOUNT IS OK", "[$displayname]");
+        wachthond($extdebug,2, "########################################################################");
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.1 A CHECK OP DRUPAL ACCOUNT VIA CIVICRM API", "[VIA CID $contact_id]");
+        wachthond($extdebug,3, "########################################################################");
+
+        $crm_drupal_account_found       = 0;
+        $crm_drupal_account_danger      = 0;
+        $crm_drupal_account_name_safe   = 0;
+        $crm_drupal_account_mail_safe   = 0;
+
+        $params_drupaluser = [
+            'return'        => ["id","name"],
+            'contact_id'    => $contact_id,
+            'sequential'    => 1,
+        ];
+        try{
+            wachthond($extdebug,7, 'params_drupaluser',     $params_drupaluser);
+            $result_drupaluser = civicrm_api3('User','get', $params_drupaluser);
+            wachthond($extdebug,9, 'result_drupaluser',     $result_drupaluser);
+        }
+        catch (CiviCRM_API3_Exception $e) {
+            // Handle error here.
+            $errorMessage   = $e->getMessage();
+            $errorCode      = $e->getErrorCode();
+            $errorData      = $e->getExtraParams();
+            wachthond($extdebug,4, "ERRORCODE: $errorCode", $errorMessage);
+        }
+
+        ##########################################################################################
+        // HANDLE LOGIC
+        ##########################################################################################
+
+        if ($result_drupaluser) {
+
+            $crm_drupal_account_id      = $result_drupaluser['values'][0]['id']     ?? NULL;
+            $crm_drupal_account_name    = $result_drupaluser['values'][0]['name']   ?? NULL;
+            $crm_drupal_account_mail    = $result_drupaluser['values'][0]['email']  ?? NULL;
+            wachthond($extdebug,3, 'crm_drupal_account_id',     $crm_drupal_account_id);
+            wachthond($extdebug,3, 'crm_drupal_account_name',   $crm_drupal_account_name);
+            wachthond($extdebug,3, 'crm_drupal_account_mail',   $crm_drupal_account_mail);
+
+            ##########################################################################################
+            ### CONNECTED DRUPAL NAAM ###
+            ##########################################################################################
+            if ($crm_drupal_account_name) {
+                wachthond($extdebug,1,  "EEN CONNECTED DRUPAL NAAM GEVONDEN (UID: $crm_drupal_account_id)",     
+                                        "PRIMA!");
+                $crm_drupal_account_found       = 1;
+            } else {
+                wachthond($extdebug,1,  "GEEN CONNECTED DRUPAL NAAM GEVONDEN",  
+                                        "ERROR (VIA CID $contact_id)");
+            }
+
+            ##########################################################################################
+            ### WARNING ###
+            ##########################################################################################
+            if ($crm_externalid > 0     AND $crm_drupal_account_id  != $crm_externalid) {
+                wachthond($extdebug,1,  "DRUPALID ($crm_drupal_account_id) != CRMEXTID ($crm_externalid)",
+                                        "WARNING [DRUPALID DANGER]");
+                $crm_drupal_account_danger      = 1;
+            }
+
+            if (empty($crm_externalid)  AND $crm_drupal_account_id > 0) {
+                wachthond($extdebug,1,  "DRUPAL ACCOUNT FOUND BUT CMSEXTID EMPTY",
+                                        "[UPDATE CMSEXTID TO $crm_drupal_account_id]");
+                $need2update_extid      = 1;
+            }
+
+            if ($crm_drupal_account_name != $user_name) {
+                wachthond($extdebug,1,  "DRUPALNAME != CRMNAME ($user_name)",
+                                        "WARNING [DRUPALNAME DANGER]");
+                $crm_drupal_account_name_safe   = 0;
+            }
+
+            ##########################################################################################
+            ### PRIMA ###
+            ##########################################################################################
+            if (empty($crm_externalid) AND $crm_drupal_account_id) {
+                $crm_drupal_account_danger      = 0;
+                $crm_drupal_account_name_safe   = 1;
+                $valid_drupalid                 = $crm_drupal_account_id;
+            }
+
+            if ($crm_externalid AND $crm_drupal_account_id      AND $crm_drupal_account_id   == $crm_externalid) {
+                wachthond($extdebug,1, "DRUPALID == CRMEXTID", "PRIMA [$crm_drupal_account_id]");
+                $crm_drupal_account_danger      = 0;
+                $crm_drupal_account_name_safe   = 1;
+            }           
+            if ($user_name      AND $crm_drupal_account_name    AND $crm_drupal_account_name == $user_name) {
+                wachthond($extdebug,1, "DRUPALNAME == CRMNAME", "PRIMA [$user_name]");
+                $crm_drupal_account_danger      = 0;
+                $crm_drupal_account_name_safe   = 1;
+            }
+
+        } else {
+            wachthond($extdebug,1, "VIA CIVICRM API OBV CID GEEN CONNECTED DRUPAL ACCOUNT GEVONDEN");           
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.1 B CHECK OP DRUPAL ACCOUNT VIA DRUPAL API", "[VIA CMSEXTID $crm_externalid]");
+        wachthond($extdebug,3, "########################################################################");
+
+        $cms_drupal_account_found       = 0;
+        $cms_drupal_account_danger      = 0;
+        $cms_drupal_account_name_safe   = 0;
+        $cms_drupal_account_mail_safe   = 0;
+
+        if (empty($crm_externalid)) {
+
+            wachthond($extdebug,1, "CMSEXTID IS LEEG DUS KON HIER OBV NIET CHECKEN", "[NOT FOUND]");
+
+        } else {
+
+            global $cms_drupal_account;
+            $cms_drupal_account      = user_load($crm_externalid);
+
+            $cms_drupal_account_id   = $cms_drupal_account->uid;
+            $cms_drupal_account_mail = $cms_drupal_account->mail;
+            $cms_drupal_account_name = $cms_drupal_account->name;
+
+            $cms_drupal_account_role = $cms_drupal_account->roles;
+
+            wachthond($extdebug,3, "cms_drupal_account_id",     $cms_drupal_account_id);
+            wachthond($extdebug,3, "cms_drupal_account_mail",   $cms_drupal_account_mail);
+            wachthond($extdebug,3, "cms_drupal_account_name",   $cms_drupal_account_name);
+            wachthond($extdebug,4, "cms_drupal_account",        $cms_drupal_account);
+
+            ##########################################################################################
+            // HANDLE LOGIC
+            ##########################################################################################
+
+            if ($cms_drupal_account_id > 0) {
+                wachthond($extdebug,1, "VIA CMSEXTID ($crm_externalid) DRUPAL ACCOUNT ($cms_drupal_account_id) GEVONDEN", 
+                                        "[PRIMA!]");
+                $cms_drupal_account_found   = 1;
+            }
+
+            if ($cms_drupal_account_id > 0 AND $cms_drupal_account_name != $user_name) {
+                wachthond($extdebug,1,  "VIA CMSEXTID ($crm_externalid) DRUPAL ACCOUNT ($cms_drupal_account_id) GEVONDEN",
+                                        "CHECK [WANT ANDERE USER_NAME]");
+                $cms_drupal_account_danger  = 1;
+            }
+
+            if ($cms_drupal_account_id > 0 AND $cms_drupal_account_mail != $user_mail) {
+                wachthond($extdebug,1,  "VIA CMSEXTID ($crm_externalid) DRUPAL ACCOUNT ($cms_drupal_account_id) GEVONDEN",
+                                        "CHECK [WANT ANDERE USER_MAIL]");
+                $cms_drupal_account_danger  = 1;
+            }
+
+            wachthond($extdebug,3, "user_name (contructed)",        $user_name);
+            wachthond($extdebug,3, "cms_drupal_account_name",       $cms_drupal_account_name);
+            wachthond($extdebug,3, "job_title (crm drupalnaam)",    $crm_drupalnaam);
+
+            if ($cms_drupal_account_name == $user_name AND $cms_drupal_account_name == $crm_drupalnaam) {
+                wachthond($extdebug,1,  "DRUPALNAME == CONSTRUCTED USERNAME == civcrm_jobtitle",
+                                        "PRIMA [VIA CRMEXTID $crm_externalid]");
+
+                $cms_drupal_account_name_safe   = 1;
+
+            } else {
+                wachthond($extdebug,1,  "DRUPALNAME != CONSTRUCTED USERNAME != civcrm_jobtitle", 
+                                        "ERROR [VIA CRMEXTID ($crm_externalid]");
+                wachthond($extdebug,3,  "user_name_nick (meisjesnaam)", $user_name_nick);
+
+                // M61 TODO: KAN SOMS VOORKOMEN INDIEN GETROUWD EN DAN NIEUWE NAAM OF BIJ ECHTE DUBBELE NAAM
+                // MSS CHECK OP USERNAME VIA NIEUWE NAAM VS MEISJESNAAM
+            }
+
+            wachthond($extdebug,3, "user_mail (constructed)",       $user_mail);
+            wachthond($extdebug,3, "cms_drupal_account_mail",       $cms_drupal_account_mail);
+
+            if ($cms_drupal_account_mail == $user_mail) {
+                wachthond($extdebug,1,  "DRUPALMAIL == CIVICRM EMAIL",                          
+                                        "PRIMA [VIA CRMEXTID $crm_externalid]");
+                $cms_drupal_account_mail_safe = 1;
+            }
+
+            wachthond($extdebug,3, "cms_drupal_account_name_safe",      $cms_drupal_account_name_safe);
+            wachthond($extdebug,3, "cms_drupal_account_mail_safe",      $cms_drupal_account_mail_safe);
+
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.2 A CHECK VIA CIVICRM API OP UF_MATCH", "[VIA CID: $contact_id]");
+        wachthond($extdebug,3, "########################################################################");
+
+        $found_cid_ufmatch      = 0;
+        $rogue_cid_ufmatch      = 0;
+
+        $inputtype              = 'contactid';
+        $input                  = $contact_id;
+        $inputname              = "CONTACTID";
+
+        $cid_ufmatch            = find_ufmatch($inputtype, $input)  ?? NULL;
+        $cid_ufmatch_found      = (is_object($cid_ufmatch) == true ?  1 : 0 );
+        wachthond($extdebug,4, "cid_ufmatch",       $cid_ufmatch);
+        wachthond($extdebug,3, "cid_ufmatch_found", $cid_ufmatch_found);
+
+        ##########################################################################################
+        // HANDLE LOGIC
+        ##########################################################################################
+
+        if ($cid_ufmatch_found == 1 ) {
+
+            if ($cid_ufmatch->cid   == $contact_id) {
+                wachthond($extdebug,2,  "IN MATCH KLOPT UFMATCH CID MET CONTACT ID ($cid_ufmatch->cid)",
+                                        "PRIMA [CID_MATCH_ID: $cid_ufmatch->id]");
+                $found_cid_ufmatch  = 1;
+            }
+            if ($cid_ufmatch->ufid  == $crm_drupal_account_id) {
+                wachthond($extdebug,2,  "IN MATCH KLOPT UFMATCH UFID MET CONNECTED DID ($crm_drupal_account_id)",
+                                        "PRIMA [CID_MATCH_ID: $cid_ufmatch->id]");
+            }
+            if ($cid_ufmatch->ufid  != $crm_drupal_account_id) {
+
+                $rogue_cid_ufmatch  = 1;
+
+                $cid_ufmatch_findcontact        = find_contact('drupalid',  $cid_ufmatch->ufid) ?? NULL;
+                $cid_ufmatch_findcontact_found  = (is_object($cid_ufmatch_findcontact) == true ?  1 : 0 );
+                wachthond($extdebug,4, "cid_ufmatch_findcontact",           $cid_ufmatch_findcontact);
+                wachthond($extdebug,3, "cid_ufmatch_findcontact_found",     $cid_ufmatch_findcontact_found);
+
+                if ($cid_ufmatch_findcontact_found == 1) {
+
+                    wachthond($extdebug,3, "cid_ufmatch_findcontact->cid",  $cid_ufmatch_findcontact->cid);
+                    wachthond($extdebug,3, "cid_ufmatch_findcontact->naam", $cid_ufmatch_findcontact->naam);
+
+                    if ($cid_ufmatch_findcontact->cid == $contact_id) {
+                        wachthond($extdebug,2, "IN MATCH WIJST UFMATCH CID NAAR ROGUE CONTACT ($cid_ufmatch_findcontact->naam)", "ERROR!");
+                        $need2repair_ufmatch == 1;
+                    }
+                    if ($cid_ufmatch_findcontact->cid != $contact_id) {
+                        wachthond($extdebug,2, "IN MATCH WIJST UFMATCH CID NAAR ROGUE CONTACT ($cid_ufmatch_findcontact->naam)", "ERROR!");
+                        $need2repair_ufmatch == 1;
+                    }
+
+                } else {
+                    wachthond($extdebug,2, "IN MATCH WIJST UFMATCH UFID NAAR ROGUE CONTACT ($cid_ufmatch->ufid)",       "ERROR!");
+                    wachthond($extdebug,2, "BIJ DID $cid_ufmatch->ufid VIA FIND_CONTACT GEEN CONTACT GEVONDEN",         "ERROR!");
+                    $need2repair_ufmatch == 1;  
+                }
+            }
+
+        } else {
+            wachthond($extdebug,2, "VIA $inputname ($input) GEEN UFMATCH GEVONDEN", "[NOT FOUND]");
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.2 B CHECK VIA CIVICRM API OP UF_MATCH", "[VIA CMSEXTID $crm_externalid]");
+        wachthond($extdebug,3, "########################################################################");
+
+        $found_cmsid_ufmatch    = 0;
+        $rogue_cmsid_ufmatch    = 0;
+
+        if (empty($crm_externalid)) {
+
+            wachthond($extdebug,1, "CMSEXTID IS LEEG DUS KON HIER OBV NIET CHECKEN", "[NOT FOUND]");
+
+        } else {
+
+            $inputtype              = 'drupalid';
+            $input                  = $crm_externalid;
+            $inputname              = "CMSID";
+
+            $cmsid_ufmatch          = find_ufmatch($inputtype, $input)  ?? NULL;
+            $cmsid_ufmatch_found    = (is_object($cmsid_ufmatch) == true ?  1 : 0 ); 
+            wachthond($extdebug,4, "cmsid_ufmatch",         $cmsid_ufmatch);
+            wachthond($extdebug,3, "cmsid_ufmatch_found",   $cmsid_ufmatch_found);
+
+            ##########################################################################################
+            // HANDLE LOGIC
+            ##########################################################################################
+            if ($cmsid_ufmatch_found == 1 ) {
+
+                // HANDLE MAIN LOGIC
+                if ($cmsid_ufmatch->ufid    == $crm_externalid) {
+                    wachthond($extdebug,2,  "IN MATCH KLOPT UFMATCH UFID MET CMSEXTID ($cmsid_ufmatch->ufid)",
+                                            "PRIMA [CMSID_MATCH_ID: $cmsid_ufmatch->id]");      
+                    $found_cmsid_ufmatch    = 1;
+                }
+
+                // HANDLE EXTRA LOGIC
+                if ($cmsid_ufmatch->cid     == $contact_id) {
+                    wachthond($extdebug,2,  "IN MATCH KLOPT UFMATCH CID MET CONTACT_ID ($cmsid_ufmatch->cid)",
+                                            "PRIMA [CMSID_MATCH_ID: $cmsid_ufmatch->id]");
+                }
+
+                if ($cmsid_ufmatch->cid     != $contact_id) {
+
+                    $rogue_cmsid_ufmatch    = 1;
+
+                    $cmsid_ufmatch_findcontact          = find_contact('contactid', $cmsid_ufmatch->cid)            ?? NULL;
+                    $cmsid_ufmatch_findcontact_found    = (is_object($cmsid_ufmatch_findcontact) == true ?  1 : 0 );
+                    wachthond($extdebug,4, "cmsid_ufmatch_findcontact",         $cmsid_ufmatch_findcontact);
+                    wachthond($extdebug,3, "cmsid_ufmatch_findcontact_found",   $cmsid_ufmatch_findcontact_found);
+
+                    if ($cmsid_ufmatch_findcontact_found == 1) {
+
+                        wachthond($extdebug,3, "cmsid_ufmatch_findcontact_contactid",               $cmsid_ufmatch_findcontact->cid);
+                        wachthond($extdebug,3, "cmsid_ufmatch_findcontact_externalid (drupal id)",  $cmsid_ufmatch_findcontact->cmsid);
+                        wachthond($extdebug,3, "cmsid_ufmatch_findcontact_drupalnaam (user_name)",  $cmsid_ufmatch_findcontact->name);
+                        wachthond($extdebug,3, "cmsid_ufmatch_findcontact_displayname (civicrm)",   $cmsid_ufmatch_findcontact->naam);
+
+                        wachthond($extdebug,2,  "IN MATCH WIJST UFMATCH CID NAAR ROGUE CONTACT ($cmsid_ufmatch_findcontact->cid)",
+                                                "ERROR! ($cmsid_ufmatch_findcontact->naam)");
+
+                    } else {
+                        wachthond($extdebug,2, "IN MATCH WIJST UFMATCH CID NAAR ORPHAN CONTACT ($cmsid_ufmatch->cid)",  "ERROR!");
+                        wachthond($extdebug,2, "BIJ CID $cmsid_ufmatch->cid VIA FIND_CONTACT GEEN CONTACT GEVONDEN",    "ERROR!");                  
+                    }
+                }
+
+            } else {
+                wachthond($extdebug,2, "VIA $inputname ($input) GEEN UFMATCH GEVONDEN", "[NOT FOUND]");
+            }
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.2 C CHECK VIA CIVICRM API OP UF_MATCH", "[VIA USERMAIL: $user_mail]");
+        wachthond($extdebug,3, "########################################################################");
+
+        $found_mail_ufmatch     = 0;
+        $rogue_mail_ufmatch     = 0;
+
+        $inputtype              = 'usermail';
+        $input                  = $user_mail;
+        $inputname              = "USERMAIL";
+
+        $mail_ufmatch           = find_ufmatch($inputtype, $input)  ?? NULL;
+        $mail_ufmatch_found     = (is_object($mail_ufmatch) == true ?  1 : 0 ); 
+
+        ##########################################################################################
+        // HANDLE LOGIC
+        ##########################################################################################
+
+        if ($mail_ufmatch->cid > 0) {
+
+            wachthond($extdebug,4, "mail_ufmatch",      $mail_ufmatch);
+            wachthond($extdebug,3, "mail_ufmatch_found",$mail_ufmatch_found);
+
+            // HANDLE MAIN LOGIC
+            if ($mail_ufmatch->name == $user_mail) {
+                wachthond($extdebug,2, "IN MATCH VIA MAIL KLOPT UFMATCH_NAME MET USER_MAIL", 
+                    "PRIMA [$mail_ufmatch->name]");     
+                $found_mail_ufmatch     = 1;
+            }
+
+            // HANDLE EXTRA LOGIC
+            if ($mail_ufmatch->cid  == $contact_id) {
+                wachthond($extdebug,2, "IN MATCH VIA MAIL KLOPT UFMATCH CID MET CONTACT_ID", 
+                    "PRIMA [MATCH_ID: $mail_ufmatch->id / MATCH_CID: $mail_ufmatch->cid]");
+                $found_mail_ufmatch     = 1;
+            }
+
+            if ($mail_ufmatch->cid  != $contact_id) {
+
+                $rogue_mail_ufmatch     = 1;
+                        
+                $mail_ufmatch_findcontact       = find_contact('contactid', $mail_ufmatch->cid)         ?? NULL;
+                $mail_ufmatch_findcontact_found = (is_object($mail_ufmatch_findcontact) == true ?  1 : 0 );
+                wachthond($extdebug,4, "mail_ufmatch_findcontact",          $mail_ufmatch_findcontact);
+                wachthond($extdebug,3, "mail_ufmatch_findcontact_found",    $mail_ufmatch_findcontact_found);
+
+                if ($mail_ufmatch_findcontact_found == 1) {
+
+                    wachthond($extdebug,3, "mail_ufmatch_findcontact_contactid",                $mail_ufmatch_findcontact->cid);
+                    wachthond($extdebug,2, "mail_ufmatch_findcontact_externalid  (drupal id)",  $mail_ufmatch_findcontact->cmsid);
+                    wachthond($extdebug,2, "mail_ufmatch_findcontact_drupalnaam  (user_name)",  $mail_ufmatch_findcontact->name);
+                    wachthond($extdebug,2, "mail_ufmatch_findcontact_displayname (civicrm)",    $mail_ufmatch_findcontact->naam);
+
+                    wachthond($extdebug,2,  "IN MATCH VIA MAIL WIJST UFMATCH CID NAAR ANDER CONTACT",
+                                            "CHECK! ($mail_ufmatch_findcontact->naam) [DUBBEL? FAMILIE?]");
+
+                    if ($mail_ufmatch_findcontact->name == $user_name) {
+                        // ALS USERNAME OVEREENKOMT DAN TOCH MOGELIJK ECHT DE JUSTE DIE OPNIEUW GEKOPPELD MOET WORDEN
+                        wachthond($extdebug,2,  "USERNAME VAN ANDER CONTACT (CID:$mail_ufmatch_findcontact->cid) IS ZELFDE",
+                                                "[WRS DUBBEL CONTACT]");
+                    }
+
+                } else {
+                    wachthond($extdebug,2,  "IN MATCH VIA MAIL WIJST UFMATCH CID NAAR ANDER CONTACT ($mail_ufmatch->cid)",
+                                            "CHECK! [DUBBEL? FAMILIE?]");
+                    wachthond($extdebug,2,  "BIJ CID $mail_ufmatch->cid VIA FIND_CONTACT GEEN CONTACT GEVONDEN", "[NOT FOUND]");
+                }
+            }
+
+        } else {
+            wachthond($extdebug,2, "VIA $inputname ($input) GEEN UFMATCH GEVONDEN", "ERROR!");
+
+            $usermail_notinany_ufmatch  = 1;
+            wachthond($extdebug,2, "usermail_notinany_ufmatch",     $usermail_notinany_ufmatch);
+
+//          $mail_notinany_cmsaccount   = 1;
+//          $usermail_notinany_crmcontact   = 1;
+
+        }
+
+        ##########################################################################################
+        if ($crm_drupal_account_danger == 1 OR $contact_id) {
+        ##########################################################################################
+
+            wachthond($extdebug,3, "########################################################################");
+            wachthond($extdebug,1, "### DRUPAL 9.3 A CHECK VIA DRUPAL API CMSEXTID $crm_externalid", "ROGUE MATCH?");
+            wachthond($extdebug,3, "########################################################################");
+        
+            if (empty($crm_externalid)) {
+
+                wachthond($extdebug,1, "CMSEXTID IS LEEG DUS KON HIER OBV NIET CHECKEN", "[NOT FOUND]");
+
+            } else {
+
+                global $cmsextid_account;
+                $cmsextid_account = user_load($crm_externalid);
+
+                ##########################################################################################
+                // HANDLE LOGIC
+                ##########################################################################################
+
+                if ($cmsextid_account->uid > 0 AND $cmsextid_account->uid != $crm_externalid AND $crm_externalid > 0) {
+
+                    wachthond($extdebug,2, "VIA CRMEXTID $crm_externalid CONFLICTEREND ACCOUNT ($cmsextid_account->uid) GEVONDEN", "DANGER!");
+
+                    wachthond($extdebug,4, "cmsextid_account_name",     $cmsextid_account->name);
+                    wachthond($extdebug,4, "cmsextid_account_mail",     $cmsextid_account->mail);
+                    wachthond($extdebug,4, "cmsextid_account_uid",      $cmsextid_account->uid);
+
+                    $safe2repair_account = 0;
+                } else {
+                    wachthond($extdebug,2, "VIA CRMEXTID $crm_externalid GEEN ROGUE ACCOUNT GEVONDEN");
+                }
+            }
+
+            wachthond($extdebug,3, "########################################################################");
+            wachthond($extdebug,1, "### DRUPAL 9.3 B CHECK VIA DRUPAL API CMSID_UFMATCH_UFID $cmsid_ufmatch->ufid", "ROGUE MATCH?");
+            wachthond($extdebug,3, "########################################################################");
+
+            if ($cmsid_ufmatch_found == 0) {
+
+                wachthond($extdebug,2, "GEEN MAIL_UFMATCH GEVONDEN DUS KON HIER OBV NIET CHECKEN","[NOT FOUND]");
+
+            } else {
+
+                global $cmsid_ufid_account;
+                $cmsid_ufid_account = user_load($cmsid_ufmatch->ufid);
+
+                wachthond($extdebug,4, "cmsid_ufid_account_name",   $cmsid_ufid_account->name);
+                wachthond($extdebug,4, "cmsid_ufid_account_mail",   $cmsid_ufid_account->mail);
+                wachthond($extdebug,4, "cmsid_ufid_account_uid",    $cmsid_ufid_account->uid);
+
+                ##########################################################################################
+                // HANDLE LOGIC
+                ##########################################################################################
+
+                if ($cmsid_ufid_account->uid > 0 AND $cmsid_ufid_account->uid != $crm_externalid AND $crm_externalid > 0) {
+
+                    wachthond($extdebug,2, "VIA CMS UFMATCH_UFID ($cmsid_ufmatch->ufid) ROGUE UFMATCH ($cmsid_ufid_account) GEVONDEN", "DANGER!");
+
+                    $safe2repair_ufmatch    = 0;
+
+                } else {
+
+                    wachthond($extdebug,2, "VIA CMSID_UFMATCH $cmsid_ufmatch->ufid GEEN ROGUE ACCOUNT GEVONDEN");
+                    $safe2repair_ufmatch    = 1;
+                }
+            }
+
+            wachthond($extdebug,3, "########################################################################");
+            wachthond($extdebug,1, "### DRUPAL 9.3 C CHECK VIA CIVICRM API UFMATCH_UFID $mail_ufmatch->ufid", "ROGUE/ORPHAN?");
+            wachthond($extdebug,3, "########################################################################");
+
+            if ($mail_ufmatch_found == 0) {
+
+                wachthond($extdebug,2, "GEEN MAIL_UFMATCH GEVONDEN DUS KON HIER OBV NIET CHECKEN","[NOT FOUND]");
+
+            } else {
+
+                global $mail_ufid_account;
+                $mail_ufid_account = user_load($mail_ufmatch->ufid);
+
+                wachthond($extdebug,4, "mail_ufid_account_mail",    $mail_ufid_account->mail);
+                wachthond($extdebug,4, "mail_ufid_account_uid",     $mail_ufid_account->uid);
+                wachthond($extdebug,4, "mail_ufid_account_name",    $mail_ufid_account->name);
+
+                ##########################################################################################
+                // HANDLE LOGIC
+                ##########################################################################################
+
+                if ($mail_ufid_account->uid != $crm_externalid AND $crm_externalid > 0) {
+
+                    wachthond($extdebug,2, "VIA UFMATCH MAIL ($mail_ufmatch->ufid) MSS ROGUE ACCOUNT ($mail_ufid_account->name) GEVONDEN", "CHECK!");
+
+                    $safe2repair_ufmatch = 0;
+
+                } else {
+
+                    wachthond($extdebug,2, "VIA UFMATCH MAIL ($mail_ufmatch->ufid) GEEN ROGUE ACCOUNT GEVONDEN");
+
+                    $safe2repair_ufmatch = 1;
+                }
+            }
+
+            wachthond($extdebug,3, "########################################################################");
+            wachthond($extdebug,1, "### DRUPAL 9.3 D CHECK IF DRUPALID IS CRMEXTID FOR OTHER CONTACT", "$crm_drupal_account_id");
+            wachthond($extdebug,3, "########################################################################");
+
+            if (empty($crm_drupal_account_id)) {
+
+                wachthond($extdebug,2, "GEEN CRM_DRUPAL_ACCOUNT GEVONDEN DUS KON HIER OBV NIET CHECKEN","[NOT FOUND]");
+
+            } else {
+
+                $check_findcontact          = NULL;
+                $check_findcontact          = find_contact('drupalid',  $crm_drupal_account_id) ?? NULL;
+                $check_findcontact_found    = (is_object($check_findcontact) == true ?  1 : 0 );
+                wachthond($extdebug,4, "check_findcontact",         $check_findcontact);
+                wachthond($extdebug,3, "check_findcontact_found",   $check_findcontact_found);
+
+                if ($check_findcontact_found == 1) {
+
+                    wachthond($extdebug,3, "check_findcontact_contactid",               $check_findcontact->cid);
+                    wachthond($extdebug,3, "check_findcontact_externalid  (drupal id)", $check_findcontact->cmsid);
+                    wachthond($extdebug,3, "check_findcontact_drupalnaam  (user_name)", $check_findcontact->name);
+                    wachthond($extdebug,3, "check_findcontact_displayname (civicrm)",   $check_findcontact->naam);
+
+                    $safe2update_account    = 0;
+                    $safe2update_jobtitle   = 0;
+
+                    wachthond($extdebug,2,  "SAFE2  UPDATE DRUPALACCOUNT",  $safe2update_account);
+                    wachthond($extdebug,2,  "IN MATCH WIJST UFMATCH UID NAAR ROGUE CONTACT",
+                                            "ERROR! [$check_findcontact->cid]");
+                } else {
+                    wachthond($extdebug,2,  "BIJ UID $crm_drupal_account_id GEEN CONTACT GEVONDEN", 
+                                            "CHECK! [MOGELJK HERSTELBAAR]");    
+                }
+                ##########################################################################################
+                // HANDLE LOGIC
+                ##########################################################################################
+
+                if ($check_findcontact->cid > 0 AND $check_findcontact->cid == $contact_id) {
+
+                    wachthond($extdebug,2, "CONNECTED UID IS EXTID ($crm_externalid) VAN $check_findcontact->naam", "PRIMA!");
+                    $need2update_extid = 1;
+                    $safe2update_extid = 1;
+                }
+
+                if ($check_findcontact->cid > 0 AND $check_findcontact->cid != $contact_id) {
+
+                    wachthond($extdebug,2,  "CONNECTED UID IS EXTID ($crm_externalid) VAN $check_findcontact->naam", 
+                                            "SAFE2REPAIR? DANGER!");
+                    wachthond($extdebug,2,  "IN MATCH WIJST UFMATCH UID NAAR ROGUE CONTACT",
+                                            "ERROR! ($check_findcontact->naam)");
+                    $safe2update_extid = 0;
+                }
+            }
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.4 A CHECK USERNAME WITH LOADBYNAME", $user_name);
+        wachthond($extdebug,3, "########################################################################");
+        
+        // M61: mogelijk security risk omdat ander account met dezelfde naam gekoppeld kan worden!!!
+        // Want er kunnen meerder mensen zijn die met hun naam dezelfde constructed username opleveren
+        // Er is nog geen mechanisme om dan een aangepaste username te creeren
+        // Misschien moet hier nog het emailadres aan een check toegevoegd worden
+
+        $drupal_loadbyname          = NULL;
+        $drupal_loadbyname          = user_load_by_name($user_name);
+        $drupal_loadbyname_found    = 0;
+
+        if ($drupal_loadbyname->uid > 0) {
+            wachthond($extdebug,4, "drupal_loadbyname",         $drupal_loadbyname);
+            wachthond($extdebug,3, "drupal_loadbyname->uid",    $drupal_loadbyname->uid);
+            wachthond($extdebug,2, "drupal_loadbyname->mail",   $drupal_loadbyname->mail);
+            wachthond($extdebug,2, "drupal_loadbyname->name",   $drupal_loadbyname->name);
+        }
+
+        ##########################################################################################
+        // HANDLE LOGIC
+        ##########################################################################################
+
+        if ($drupal_loadbyname->uid > 0 AND $drupal_loadbyname->uid == $cid_ufmatch->ufid) {
+
+            wachthond($extdebug,1,  "VIA USERNAME DRUPAL ACCOUNT ($drupal_loadbyname->uid) GEVONDEN",
+                                    "PRIMA! [UFMATCH_ID: $cid_ufmatch->id]");
+
+            $drupal_loadbyname_found    = 1;
+            $drupal_loadbyname_conflict = 0;
+
+            $need2update_extid  = 1;
+            $safe2update_extid  = 1;
+
+            wachthond($extdebug,2, "NEED2 UPDATE EXTERNALID",       $need2update_extid);
+            wachthond($extdebug,2, "SAFE2 UPDATE EXTERNALID",       $safe2update_extid);            
+        }
+
+        if ($drupal_loadbyname->uid > 0 AND $drupal_loadbyname->uid != $cid_ufmatch->ufid) {
+
+            $drupal_loadbyname_found    = 1;
+            $drupal_loadbyname_conflict = 1;
+
+            // 9.4 A 1 CHECK OF GEVONDEN DRUPAL ACCOUNT ERGENS EEN UFMATCH HEEFT
+
+            $check_ufmatch          = NULL;
+            $check_ufmatch          = find_ufmatch('drupalid', $drupal_loadbyname->uid) ?? NULL;
+            $check_ufmatch_found    = (is_object($check_ufmatch) == true ?  1 : 0 );
+
+            wachthond($extdebug,4, "cid_ufmatch", $check_ufmatch);
+
+            if ($check_ufmatch->id > 0) {
+                wachthond($extdebug,1, "VIA DRUPALID VAN USERNAME ANDERE UFMATCH GEVONDEN", "ROGUE! [MOGELIJK HERSTEL NODIG] ");
+            } else {
+                wachthond($extdebug,1, "VIA DRUPALID VAN USERNAME GEEN UFMATCH GEVONDEN",   "CHECK! [MOGELIJK ORPHAN ACCOUNT]");                
+            }
+
+            // 9.4 A 2 CHECK OF GEVONDEN DRUPAL ACCOUNT VERBONDEN IS MET EEN CRM CONTACT
+
+            $drupal_loadbyname_findcontact          = find_contact('drupalid', $drupal_loadbyname->uid);
+            $drupal_loadbyname_findcontact_found    = (is_object($drupal_loadbyname_findcontact) == true ?  1 : 0 );
+            wachthond($extdebug,4, "drupal_loadbymail_findcontact",         $drupal_loadbyname_findcontact);
+            wachthond($extdebug,3, "drupal_loadbymail_findcontact_found",   $drupal_loadbyname_findcontact_found);
+
+            if ($drupal_loadbyname_findcontact->id > 0) {
+
+                if ($drupal_loadbyname_findcontact->id == $contact_id) {
+                    wachthond($extdebug,1, "VIA USERNAME GEVONDEN ACCOUNT KLOPT HET HUIDIG CONTACT",    "PRIMA! [UPDATE EXTID NODIG VOOR [$drupal_loadbyname_findcontact->name]");
+                }
+                if ($drupal_loadbyname_findcontact->id != $contact_id) {
+                    wachthond($extdebug,1, "VIA USERNAME GEVONDEN ACCOUNT HEEFT EEN ROGUE EXTID MATCH", "ERROR! [CONFLICT MET $drupal_loadbyname_findcontact->naam]");
+                }
+            } else {
+                    wachthond($extdebug,1, "VIA DRUPALID VAN USER_NAME GEEN CRM CONTACT GEVONDEN",      "CHECK! [MOGELIJK ORPHAN ACCOUNT]");
+            }
+
+            if ($check_ufmatch_found == 0 AND $drupal_loadbyname_findcontact_found == 0) {
+                $drupal_loadbyname_orphan       = 1;
+                $drupal_loadbyname_orphan_uid   = $drupal_loadbyname->uid;
+                $drupal_loadbyname_orphan_name  = $drupal_loadbyname->name;
+                wachthond($extdebug,1, "VIA USERNAME EEN KOPPELBARE ORPHAN DRUPAL ACCOUNT GEVONDEN", "[$drupal_loadbyname_orphan_uid / $drupal_loadbyname->name]");
+            }
+
+        }
+
+        if (empty($drupal_loadbyname->uid)) {
+
+            wachthond($extdebug,1, "VIA USERNAAM ($user_name) DRUPAL ACCOUNT NIET GEVONDEN", "[NOT FOUND]");
+
+            $drupal_loadbyname_found    = 0;
+            $drupal_loadbyname_conflict = 0;
+            // M61: als er geen drupal account gevonden is kan deze op 0.
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.4 B CHECK USERMAIL WITH LOADBYMAIL", $user_mail);
+        wachthond($extdebug,3, "########################################################################");
+
+        $drupal_loadbymail          = NULL;
+        $drupal_loadbymail          = user_load_by_mail($user_mail);
+        $drupal_loadbymail_found    = 0;
+        $drupal_loadbymail_conflict = 0;
+
+        if ($drupal_loadbymail->uid > 0) {
+            wachthond($extdebug,4, "drupal_loadbymail",         $drupal_loadbymail);
+            wachthond($extdebug,3, "drupal_loadbymail->uid",    $drupal_loadbymail->uid);
+            wachthond($extdebug,2, "drupal_loadbymail->mail",   $drupal_loadbymail->mail);
+            wachthond($extdebug,2, "drupal_loadbymail->name",   $drupal_loadbymail->name);
+        }
+
+        ##########################################################################################
+        // HANDLE LOGIC
+        ##########################################################################################
+
+        if ($drupal_loadbymail->uid > 0) {
+
+            wachthond($extdebug,3, "########################################################################");
+            wachthond($extdebug,1, "### DRUPAL 9.4 B 1 CHECK OF GEVONDEN DRUPAL ACCOUNT WAAR DAN OOK EEN UFMATCH HEEFT");
+            wachthond($extdebug,3, "########################################################################");
+
+            $check_ufmatch                          = NULL;
+            $check_ufmatch_found                    = 0;
+            $check_findcontact_found                = 0;
+            $drupal_loadbymail_findcontact_found    = 0;
+
+            $check_ufmatch          = find_ufmatch('drupalid', $drupal_loadbymail->uid) ?? NULL;
+            $check_ufmatch_found    = (is_object($check_ufmatch) == true ?  1 : 0 );
+            wachthond($extdebug,4, "check_ufmatch",         $check_ufmatch);
+            wachthond($extdebug,3, "check_ufmatch_found",   $check_ufmatch_found);
+
+            if ($check_ufmatch->cid == $contact_id) {
+
+                wachthond($extdebug,1,  "VIA USERMAIL DRUPAL ACCOUNT ($drupal_loadbymail->uid) GEVONDEN", 
+                                        "PRIMA! [UFMATCH_ID: $cid_ufmatch->id]");
+
+                $drupal_loadbymail_found    = 1;
+                $drupal_loadbymail_conflict = 0;
+
+                if ($drupal_loadbymail->mail != $cid_ufmatch->name) {
+
+                    wachthond($extdebug,1, "SAFE2UPDATE: UFMATCH ($cid_ufmatch->id) MAIL VAN $cid_ufmatch->name NAAR", $user_mail);
+
+                    $need2update_ufmatch_mail   = 1;
+                    $safe2update_ufmatch_mail   = 1;
+                    $valid_ufmatch              = $cid_ufmatch->id;
+
+                    // M61: ALS VIA USER_MAIL EEN DRUPAL ACCOUNT GEVONDEN WORDT 
+                    // M61: EN ER MET DIE USER_MAIL GEEN UFMATCH GEVONDEN
+                    // M61: EN HET DRUPAL ID KOMT OVEREEN MET DE HUIDIGE UFMATCH
+                    // M61: DAN IS HET SAFE OM DE GEVONDEN UFMATCH TE UPDATEN NAAR DIT EMAILADRES
+                }
+            }
+
+            if ($check_ufmatch->cid != $contact_id) {
+
+                // ALS ENIGE UFMATCH VIA MAIL IS KAN HET GOED ZIJN DAT DIE LINKT NAAR VALIDE ACCOUNT VAN GEZINSLID
+
+                $check_findcontact          = find_contact('contactid', $check_ufmatch->cid) ?? NULL;
+                $check_findcontact_found    = (is_object($check_findcontact) == true ?  1 : 0 );
+                if ($check_findcontact_found == 1) {
+                    wachthond($extdebug,4, "check_findcontact",         $check_findcontact);
+                    wachthond($extdebug,3, "check_findcontact_found",   $check_findcontact_found);
+                    wachthond($extdebug,1, "ROGUE CONTACT UFMATCH WIJST NAAR $check_findcontact->naam", "CHECK! [MOGELIJK FAMILIE]");
+                } else {
+                    wachthond($extdebug,1, "ROGUE CONTACT UFMATCH (CID: $check_ufmatch->cid) WIJST NIET NAAR CRM CONTACT", "CHECK! [MSS VERWIJDERD]");                  
+                }
+            }
+
+            if ($check_ufmatch_found == 0) {
+                wachthond($extdebug,1, "VIA DRUPALID VAN USERMAIL GEEN UFMATCH GEVONDEN",   
+                    "CHECK! [MOGELIJK ORPHAN ACCOUNT]");                
+            }
+
+            wachthond($extdebug,3, "########################################################################");
+            wachthond($extdebug,1, "### DRUPAL 9.4 B 2 CHECK OF GEVONDEN DRUPAL ACCOUNT VERBONDEN IS MET EEN CRM CONTACT");
+            wachthond($extdebug,3, "########################################################################");
+
+            $drupal_loadbymail_findcontact          = find_contact('drupalid', $drupal_loadbymail->uid) ?? NULL;
+            $drupal_loadbymail_findcontact_found    = (is_object($drupal_loadbymail_findcontact) == true ?  1 : 0 );
+            wachthond($extdebug,4, "drupal_loadbymail_findcontact",         $drupal_loadbymail_findcontact);
+            wachthond($extdebug,3, "drupal_loadbymail_findcontact_found",   $drupal_loadbymail_findcontact_found);
+
+            if ($drupal_loadbymail_findcontact->cid > 0) {
+
+                wachthond($extdebug,3, "drupal_loadbymail_findcontact->name",   $drupal_loadbymail_findcontact->name);
+
+                if ($drupal_loadbymail_findcontact->cid == $contact_id) {
+                    wachthond($extdebug,1,  "VIA MAIL GEVONDEN ACCOUNT KLOPT MET DIT CONTACT",  
+                                            "PRIMA! [MSS UPDATE EXTID NODIG]");
+                }
+                if ($drupal_loadbymail_findcontact->cid != $contact_id) {
+                    wachthond($extdebug,1,  "ROGUE CONTACT UFMATCH WIJST NAAR $check_findcontact->naam",
+                                            "CHECK! [MOGELIJK FAMILIE]");
+                }
+            } else {
+                    wachthond($extdebug,1,  "VIA UID $drupal_loadbymail->uid GEEN CONTACT GEVONDEN",
+                                            "CHECK! [MOGELIJK ORPHAN ACCOUNT]");
+            }
+
+            wachthond($extdebug,3, "check_findcontact_found",   $check_findcontact_found);
+
+            if ($check_ufmatch_found == 0 AND $drupal_loadbymail_findcontact_found == 0) {
+                $drupal_loadbymail_orphan       = 1;
+                $drupal_loadbymail_orphan_uid   = $drupal_loadbymail->uid;
+                $drupal_loadbymail_orphan_name  = $drupal_loadbymail->name;
+                wachthond($extdebug,1,  "VIA USERMAIL EEN KOPPELBARE ORPHAN DRUPAL ACCOUNT GEVONDEN", 
+                                        "[$drupal_loadbymail_orphan_uid / $drupal_loadbymail->mail]");
+            } else {
+//              wachthond($extdebug,2, "check_ufmatch_found",                   $check_ufmatch_found);
+//              wachthond($extdebug,2, "drupal_loadbymail_findcontact_found",   $drupal_loadbymail_findcontact_found);
+            }
+
+        } elseif (empty($drupal_loadbymail_mail)) {
+
+            wachthond($extdebug,1, "VIA USERMAIL ($user_mail) DRUPAL ACCOUNT NIET GEVONDEN", "[NOT FOUND]");
+            // KAN ZIJN DAT DIE DAN JUIST MOET WORDEN AANGEMAAKT
+            // KAN DUS ZIJN DAT GELDT: $safe2update_ufmatch_mail == 1;
+            // IN IEDER GEVAL GEEN CONFLICT NU MET DIT CONSTRUCTED USERMAIL AAN DE CMS KANT
+
+            $mail_notinany_cmsaccount   = 1;
+            wachthond($extdebug,2, "mail_notinany_cmsaccount",  $mail_notinany_cmsaccount);         
+
+            // M61: TODO: HIER AL DE CHECK DOEN OF NIEUWE USERNAME IN UFMATCH GEWIJZIGD IS
+            // M61: OF OF USERMAIL SWS VOORKOMT IN UF MATCH
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.5 BEPAAL OF DRUPAL ACCOUNT & UF MATCH CREATE OR UPDATE SAFE IS");
+        wachthond($extdebug,3, "########################################################################");
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.5 A DETERMINE VALID VALUE FOR CMS UID", "FIND VALID DRUPALID");
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "crm_externalid",                $crm_externalid);           // via opgeslagen veld in civicrm
+        wachthond($extdebug,3, "crm_drupal_account_id",         $crm_drupal_account_id);    // via civicrm_api3('User','get     & $contact_id           V
+        wachthond($extdebug,3, "cms_drupal_account_id",         $cms_drupal_account_id);    // via user_load                    & $crm_externalid
+        wachthond($extdebug,3, "cmsextid_account->uid",         $cmsextid_account->uid);    // via user_load                    & $crm_externalid
+        wachthond($extdebug,2, "cid_ufmatch->ufid",             $cid_ufmatch->ufid);        // via civicrm_api4('UFMatch','get' & $contact_id           V
+        wachthond($extdebug,2, "cmsid_ufmatch->ufid",           $cmsid_ufmatch->ufid);      // via civicrm_api4('UFMatch','get' & $crm_externalid
+        wachthond($extdebug,2, "mail_ufmatch_ufid",             $mail_ufmatch->ufid);       // via civicrm_api4('UFMatch','get' & $username (mail)
+        wachthond($extdebug,2, "drupal_loadbyname->uid",        $drupal_loadbyname->uid);   // via user_load_by_name            & $user_name            V
+        wachthond($extdebug,3, "drupal_loadbymail_uid",         $drupal_loadbymail->uid);   // via user_load_by_name            & $user_name            V
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "DRUPAL VIA CRM FOUND",  "$crm_drupal_account_found (UID: $crm_drupal_account_id)");
+        wachthond($extdebug,3, "DRUPAL VIA CMS FOUND",  "$cms_drupal_account_found (UID: $cms_drupal_account_id)");
+        wachthond($extdebug,3, "########################################################################"); 
+
+        ### BEPAAL VALID DRUPAL ID EERST OBV UFMATCH CID / CMSID / MAIL
+        if ($cid_ufmatch->ufid > 0) {
+
+            if (            $cid_ufmatch->ufid      > 0
+                        AND $cid_ufmatch->ufid      == $cmsid_ufmatch->ufid     
+                        AND $cmsid_ufmatch->ufid    == $mail_ufmatch->ufid)         {
+                wachthond($extdebug,2,  "VALID DRUPALID VIA UFMATCH CID/CMSID/MAIL",    
+                                        "VALID DRUPALID = $cid_ufmatch->ufid");
+                $valid_drupalid     = $cid_ufmatch->ufid;
+
+            } elseif (      $cid_ufmatch->ufid      > 0 
+                        AND $cid_ufmatch->ufid      == $crm_drupal_account_id 
+                        AND $crm_drupal_account_id  > 0)                            {
+                ### BEPAAL VALID DRUPAL ID OBV UFMATCH CID ==  CRM_DRUPAL_ACCOUNTID
+                wachthond($extdebug,1,  "VALID DRUPALID VIA UFMATCH & DRUPALACCOUNT",
+                                        "VALID DRUPALID = $cid_ufmatch->ufid");
+                $valid_drupalid     = $cid_ufmatch->ufid;
+            }
+        }
+
+        ### ER IS GEEN VALID UFMATCH - ZOEK DRUPALID OP EEN ANDERE MANIER
+        if ($cid_ufmatch_found == 0) {
+            wachthond($extdebug,3, "CRM DRUPAL ACCOUNT DANGER",     $crm_drupal_account_danger);
+            wachthond($extdebug,3, "CMS DRUPAL ACCOUNT DANGER",     $cms_drupal_account_danger);
+            wachthond($extdebug,3, "CMS DRUPAL ACCOUNT NAME_SAFE",  $cms_drupal_account_name_safe);
+            wachthond($extdebug,3, "CMS DRUPAL ACCOUNT MAIL_SAFE",  $cms_drupal_account_mail_safe);
+
+            // A) ZOEK DRUPALID VIA CRM DRUPAL ACCOUNT
+            if ($crm_drupal_account_found == 1 AND $crm_drupal_account_danger == 0) {
+
+                $valid_drupalid = $crm_drupal_account_id;
+                // M61 TODO: NOG CHECKEN OF DIT DRUPAL ID ERGENS VOORKOMT IN EEN UFMATCH
+
+                wachthond($extdebug,3, "CID UFMATCH FOUND",             $cid_ufmatch_found);
+                wachthond($extdebug,3, "CRM DRUPAL ACCOUNT ID",         $crm_drupal_account_id);
+                wachthond($extdebug,3, "CRM DRUPAL ACCOUNT DANGER",     $crm_drupal_account_danger);
+                wachthond($extdebug,1, "VALID DRUPALID ZONDER UFMATCH VIA CRM_UID","VALID DRUPALID = $valid_drupalid");
+            }
+        }
+
+        ###
+
+        If ($crm_drupal_account_id != $cms_drupal_account_id) {
+            // M61: mogelijk duplicate drupal account met gelijkende username
+            // M61: oplossing: mogelijk beste 1 van beide te verwijderen als het een orphan is
+            wachthond($extdebug,3, "########################################################################");
+            wachthond($extdebug,2, "CRM DRUPAL ACCOUNT ID != CMS DRUPAL ACCOUNT ID", "[WRS DUBBEL DRUPAL ACCOUNT]");
+            wachthond($extdebug,3, "########################################################################");
+            wachthond($extdebug,2, "CRM DRUPAL ACCOUNT ID",         $crm_drupal_account_id);
+            wachthond($extdebug,2, "CRM DRUPAL ACCOUNT NAME",       $crm_drupal_account_name);
+            wachthond($extdebug,2, "CRM DRUPAL ACCOUNT MAIL",       $crm_drupal_account_mail);
+            wachthond($extdebug,3, "CRM DRUPAL ACCOUNT NAME_SAFE",  $crm_drupal_account_name_safe);
+            wachthond($extdebug,3, "CRM DRUPAL ACCOUNT MAIL_SAFE",  $crm_drupal_account_mail_safe);
+            wachthond($extdebug,2, "CRM DRUPAL ACCOUNT DANGER",     $crm_drupal_account_danger);
+
+            $check_findcontact          = NULL;
+            $check_findcontact          = find_contact('drupalid',  $crm_drupal_account_id) ?? NULL;
+            $check_findcontact_found    = (is_object($check_findcontact) == true ?  1 : 0 );
+            wachthond($extdebug,4, "check_findcontact",         $check_findcontact);
+            wachthond($extdebug,3, "check_findcontact_found",   $check_findcontact_found);
+
+            if ($check_findcontact_found == 1) {
+
+                wachthond($extdebug,3, "check_findcontact_contactid",               $check_findcontact->cid);
+                wachthond($extdebug,3, "check_findcontact_externalid  (drupal id)", $check_findcontact->cmsid);
+                wachthond($extdebug,3, "check_findcontact_drupalnaam  (user_name)", $check_findcontact->name);
+                wachthond($extdebug,3, "check_findcontact_displayname (civicrm)",   $check_findcontact->naam);
+
+                $crm_drupal_account_prefer = 1;
+            }
+
+            if ($check_findcontact_found == 0) {
+                wachthond($extdebug,1,  "GEEN CRM CONTACT GEVONDEN GEKOPPELD AAN DRUPALID $crm_drupal_account_id",                  
+                                        "CHECK! ($crm_drupal_account_name)");
+                $crm_drupal_account_prefer = 0;
+            }
+
+            wachthond($extdebug,3, "########################################################################");
+
+            wachthond($extdebug,2, "CMS DRUPAL ACCOUNT ID",         $cms_drupal_account_id);
+            wachthond($extdebug,2, "CMS DRUPAL ACCOUNT NAME",       $cms_drupal_account_name);
+            wachthond($extdebug,2, "CMS DRUPAL ACCOUNT MAIL",       $cms_drupal_account_mail);
+            wachthond($extdebug,3, "CMS DRUPAL ACCOUNT NAME_SAFE",  $cms_drupal_account_name_safe);
+            wachthond($extdebug,3, "CMS DRUPAL ACCOUNT MAIL_SAFE",  $cms_drupal_account_mail_safe);
+            wachthond($extdebug,2, "CMS DRUPAL ACCOUNT DANGER",     $cms_drupal_account_danger);
+
+            $check_findcontact          = NULL;
+            $check_findcontact          = find_contact('drupalid',  $cms_drupal_account_id) ?? NULL;
+            $check_findcontact_found    = (is_object($check_findcontact) == true ?  1 : 0 );
+            wachthond($extdebug,4, "check_findcontact",         $check_findcontact);
+            wachthond($extdebug,3, "check_findcontact_found",   $check_findcontact_found);
+
+            if ($check_findcontact_found == 1) {
+
+                wachthond($extdebug,3, "check_findcontact_contactid",               $check_findcontact->cid);
+                wachthond($extdebug,3, "check_findcontact_externalid  (drupal id)", $check_findcontact->cmsid);
+                wachthond($extdebug,3, "check_findcontact_drupalnaam  (user_name)", $check_findcontact->name);
+                wachthond($extdebug,3, "check_findcontact_displayname (civicrm)",   $check_findcontact->naam);
+
+                $cms_drupal_account_prefer = 1;
+
+            }
+            if ($check_findcontact_found == 0) {
+                wachthond($extdebug,1,  "GEEN CRM CONTACT GEVONDEN GEKOPPELD AAN DRUPALID $cms_drupal_account_id", 
+                                        "CHECK! ($cms_drupal_account_name)");
+
+                $cms_drupal_account_prefer = 0;
+            }
+
+            if ($crm_drupal_account_prefer == 1 AND $cms_drupal_account_prefer == 0) {
+                // M61 TODO: KIJK OF DIT CMS DRUPAL ACCOUNT VEILIG KAN WORDEN VERWIJDERD
+                $valid_drupalid             = $crm_drupal_account_id;
+                $need2update_ufmatch_ufid   = 1;
+                $safe2update_ufmatch_ufid   = 1;
+
+                wachthond($extdebug,1,  "VALID DRUPALID IS VAN CRM_DRUPAL_ACCOUNT ($crm_drupal_account_id)",    
+                                        $crm_drupal_account_name);
+            }
+            if ($crm_drupal_account_prefer == 0 AND $cms_drupal_account_prefer == 1) {
+                // M61 TODO: KIJK OF DIT CRM DRUPAL ACCOUNT VEILIG KAN WORDEN VERWIJDERD
+                $valid_drupalid             = $cms_drupal_account_id;
+                $need2update_ufmatch_ufid   = 1;
+                $safe2update_ufmatch_ufid   = 1;
+                $need2update_ufmatch_mail   = 1;
+                $safe2update_ufmatch_mail   = 1;
+                $need2update_jobtitle       = 1;
+//              $safe2update_jobtitle       = 1;
+                $need2update_extid          = 1;
+                $safe2update_extid          = 1;
+                wachthond($extdebug,1,  "VALID DRUPALID IS VAN CMS_DRUPAL_ACCOUNT ($cms_drupal_account_id)",
+                                        $cms_drupal_account_name);
+            }
+
+        }
+
+        ### WAT TE DOEN ALS ER ECHT GEEN VALID DRUPAL ID WORDT GEVONDEN?
+
+        ### C) ZOEK EEN EVENTUELE ORPHAN DRUPAL ACCOUNT [ZONDER UFMATCH / NIET GEKOPPELD]
+
+        if (    $crm_drupal_account_found   == 0
+            AND $cms_drupal_account_found   == 0
+            AND $cms_drupal_account_danger  == 0
+            AND $drupal_loadbyname_found    == 0
+            AND $drupal_loadbyname_conflict == 0) {
+
+            if ($drupal_loadbyname_found == 0 AND $drupal_loadbyname_conflict == 0) {
+                wachthond($extdebug,3, "DRUPAL BYNAME  FOUND",          $drupal_loadbyname_found);
+                wachthond($extdebug,3, "DRUPAL NAME    CONFLICT",       $drupal_loadbyname_conflict);
+            }
+            if ($crm_drupal_account_found == 0 AND $cms_drupal_account_found == 0) {
+                wachthond($extdebug,3, "DRUPAL VIA CRM FOUND",          $crm_drupal_account_found);
+                wachthond($extdebug,3, "DRUPAL VIA CMS FOUND",          $cms_drupal_account_found);
+            }
+            if ($cms_drupal_account_danger == 0) {
+                wachthond($extdebug,3, "DRUPAL ID      DANGER",         $crm_drupal_account_danger);
+            }
+
+            if ($drupal_loadbyname_orphan == 1) {
+                wachthond($extdebug,3, "DRUPAL ORPHAN UID",             $drupal_loadbyname_orphan_uid);
+                wachthond($extdebug,3, "DRUPAL ORPHAN NAME",            $drupal_loadbyname_orphan_name);
+                wachthond($extdebug,3, "NEED2  REPAIR UFMATCH",         $need2repair_ufmatch);
+                wachthond($extdebug,3, "SAFE2  REPAIR UFMATCH UID",     $need2repair_ufmatch_uid);
+
+                $need2create_account        = 0;
+                $safe2create_account        = 0;
+                $need2repair_ufmatch        = 1;
+                $need2repair_ufmatch_uid    = $drupal_loadbyname_orphan_uid;
+//              $valid_drupalid             = $drupal_loadbyname_orphan_uid; // M61: PAS AAN INDIEN 100% SAFE
+
+                wachthond($extdebug,1, "SAFE2 CREATE ACCOUNT FOR $displayname", "NOT! [REPAIR ORPHAN]");
+
+            } else {
+                $need2create_account        = 1;
+                $safe2create_account        = 1;
+
+                wachthond($extdebug,1, "SAFE2 CREATE ACCOUNT FOR $displayname", "YES! [username: $user_name]");
+            }
+        }
+
+        if ($valid_drupalid > 0 AND $safe2update_account == 1 AND $need2update_extid == 1 AND $safe2update_extid == 1)  {
+            $params_contact['values']['external_identifier']    = $valid_drupalid;
+            wachthond($extdebug,2, "DOE UPDATE VAN EXTERNAL ID (CMSEXTID) MET DRUPALID", $valid_drupalid);
+        }       
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.5 B DETERMINE VALID VALUE CMS KOPPELING", "FIND VALID UFMATCHID");
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,2, "FOUND MATCH CID",   "$found_cid_ufmatch ($cid_ufmatch->id)\tROGUE: $rogue_cid_ufmatch");
+        wachthond($extdebug,2, "FOUND MATCH CMSID", "$found_cmsid_ufmatch ($cmsid_ufmatch->id)\tROGUE: $rogue_cmsid_ufmatch");
+        wachthond($extdebug,2, "FOUND MATCH MAIL",  "$found_mail_ufmatch ($mail_ufmatch->id)\tROGUE: $rogue_mail_ufmatch");
+        wachthond($extdebug,3, "########################################################################");
+
+        // M61: TODO - VRAAG IS OF UFMATCH GEVONDEN VIA MAIL ALTIJD ROGUE IS OF GEWOON VAN ANDER GEZINSLID KAN ZIJN
+
+        if ($rogue_cid_ufmatch == 1 OR $rogue_cmsid_ufmatch == 1 OR $rogue_mail_ufmatch == 1) {
+            $rogue_ufmatch_found    = 1;
+            wachthond($extdebug,2, "UFMATCH GEVONDEN MET ROGUE KOPPELING",      "ERROR");
+        }
+
+        if ($found_cid_ufmatch == 1 AND $found_cmsid_ufmatch == 1 AND $found_mail_ufmatch == 1) {
+            $drupalufmatch_found    = 1;
+            $valid_ufmatchid        = $cid_ufmatch->id;
+            wachthond($extdebug,2, "UFMATCH GEVONDEN VIA CID + CMSID + MAIL",   "PRIMA ($valid_ufmatchid)");
+        }
+
+        if ($found_cid_ufmatch == 1 AND $found_cmsid_ufmatch != 1 AND $found_mail_ufmatch == 1) {
+            $drupalufmatch_found    = 1;
+            $valid_ufmatchid        = $cid_ufmatch->id;
+            $need2update_extid      = 1;
+//          $safe2update_extid      = 1;    // M61: TODO: KLOPT DEZE AFWEGING?
+            wachthond($extdebug,2, "WEL UFMATCH GEVONDEN VIA CID + MAIL",       "MAAR GEEN UFMATCH VIA CMSID");
+            // CHECKEN OF DE DRUPAL ID VIA CID & MAIL WEL GEKOPPELD IS AAN CRM ACCOUNT EN UPDATE DAN CMSEXTID
+            wachthond($extdebug,2, "WRS OPLOSSING > UPDATE EXTERNALID NAAR $cid_ufmatch->ufid");
+            wachthond($extdebug,3, "NEED2 UPDATE EXTERNALID",       $need2update_extid);
+            wachthond($extdebug,3, "SAFE2 UPDATE EXTERNALID",       $safe2update_extid);
+        }
+
+        if ($found_cid_ufmatch == 1 AND $found_cmsid_ufmatch == 1 AND $found_mail_ufmatch == 0) {
+
+            wachthond($extdebug,2, "WEL UFMATCH GEVONDEN VIA CID + CMSID",      "MAAR GEEN UFMATCH VIA MAIL");
+            // INDIEN MAIL_UFMATCH LEIDT TOT ANDER CRM CONTACT DAN DIE UFMATCH NEGEREN EN NIEUWE AANMAKEN. 
+            // INDIEN ORPHAN EVT KOPPELEN
+/*
+            if (empty($mail_ufmatch->cid)) {
+                // M61: INFO: USERMAIL IS NERGENS GEKOPPELD AAN EEN CONTACT ID > SAFE2UPDATE MAIL
+                $valid_drupalid             = $cid_ufmatch->ufid;
+                $need2update_ufmatch_mail   = 1;
+//              $safe2update_ufmatch_mail   = 1;    // M61: TODO: KLOPT DEZE AFWEGING?
+                wachthond($extdebug,2, "WRS OPLOSSING > UPDATE UFMATCH MAIL", "VAN $mail_ufmatch->name NAAR $user_mail");
+
+                wachthond($extdebug,2, "NEED2 CREATE UFMATCH",          $need2update_ufmatch);
+                wachthond($extdebug,2, "SAFE2 CREATE UFMATCH",          $safe2update_ufmatch);
+            }
+            // M61: BETER ZOU ZIJN: IF LOADBYMAIL OBV USER_MAIL NIETS VIND, DAN KAN MAIL IN UFMATCH SWS GEUPDATE WORDEN
+            if ($mail_ufmatch->cid == $contact_id) {
+                $valid_drupalid             = $cid_ufmatch->ufid;
+                $need2update_ufmatch_mail   = 1;
+//              $safe2update_ufmatch_mail   = 1;    // M61: TODO: KLOPT DEZE AFWEGING?
+                wachthond($extdebug,2, "WRS OPLOSSING > CREATE NIEUWE UFMATCH", "[NEED2CREATE]");
+                wachthond($extdebug,2, "NEED2 UPDATE UFMATCH",          $need2update_ufmatch);
+                wachthond($extdebug,2, "SAFE2 UPDATE UFMATCH",          $safe2update_ufmatch);
+            }
+*/  
+            // M61 TODO: EERST CHECKEN OF NIEUWE EMAIL NIET AL VOORKOMT IN EEN UFMATCH OF BIJ DRUPAL ACCOUNT
+            // (VAN GEZINSLEDEN BV)     
+        }
+
+
+        // INDIEN GEEN UFMATCH OF GELINKTE DRUPAL ACCOUNT GEVONDEN MAAR WEL DRUPAL ORPHAN ACCOUNT
+        if ($found_cid_ufmatch != 1 AND $found_cmsid_ufmatch != 1 AND $found_mail_ufmatch != 1) {
+
+            if ($drupal_loadbyname_orphan == 1) {
+    
+                $need2repair_ufmatch        = 1;
+                $need2repair_ufmatch_uid    = $drupal_loadbyname_orphan_uid;
+//              $safe2repair_ufmatch        = 1;    // M61: TODO: KLOPT DEZE AFWEGING?
+
+                $need2create_ufmatch        = 1;
+//              $safe2create_ufmatch        = 1;    // M61: TODO: KLOPT DEZE AFWEGING?
+
+//              M61: TODO: EERST NOG EXTRA CHECKEN VOOR DEZE AAN KAN
+//              $valid_drupalid             = $drupal_loadbyname_orphan_uid;
+                wachthond($extdebug,2, "GEEN UFMATCH, WEL ORPHAN DRUPAL ACCOUNT", " $drupal_loadbyname_orphan_name]");
+                wachthond($extdebug,2, "WRS OPLOSSING > CREATE UFMATCH MET UID $drupal_loadbyname_orphan_uid");
+                wachthond($extdebug,3, "NEED2 CREATE UFMATCH",          $need2update_ufmatch);
+                wachthond($extdebug,3, "SAFE2 CREATE UFMATCH",          $safe2update_ufmatch);
+            }
+        }
+
+        //     IF UFMATCH MAAR WIJST NIET NAAR JUISTE DRUPAL ACCOUNT
+        // AND IF EXIST EEN ORPHAN DRUPAL ACCOUNT MET JUISTE USERNAME & USERMAIL
+        // DAN SAFE2UPDATE_UFMATCH_UFID (KOPPEL NIEUW DRUPALACCOUNT AAN DIT CIVICRM CONTACT)   
+        // $need2update_ufmatch_ufid    = 1;
+        // $safe2update_ufmatch_ufid    = 1;
+
+        ##########################################################################################
+
+        wachthond($extdebug,3, "CRM DRUPAL ACCOUNT DANGER",     $crm_drupal_account_danger);
+        wachthond($extdebug,3, "CMS DRUPAL ACCOUNT DANGER",     $cms_drupal_account_danger);
+        wachthond($extdebug,3, "CMS DRUPAL ACCOUNT NAME_SAFE",  $cms_drupal_account_name_safe);
+        wachthond($extdebug,3, "CMS DRUPAL ACCOUNT MAIL_SAFE",  $cms_drupal_account_mail_safe);
+
+        // A) ZOEK EERST VIA BESTAANDE CID_UFMATCH & ANDERE MATCHES
+        if ($cid_ufmatch->cid > 0) {
+
+            if (    $cid_ufmatch->cid    === $cmsid_ufmatch->cid 
+                AND $cmsid_ufmatch->cid  === $mail_ufmatch->cid    AND $rogue_cid_ufmatch == 0) {
+                wachthond($extdebug,1, "UFMATCH GEVONDEN VIA CID + CMSID + MAIL",       "UFMATCHID: $cid_ufmatch->id");
+                $valid_ufmatchid    = $cid_ufmatch->id;
+            } elseif ($crm_drupal_account_id == $cid_ufmatch->ufid AND $rogue_cid_ufmatch == 0) {
+                wachthond($extdebug,1, "UFMATCH GEVONDEN VIA CID_UFMATCH / NOT ROGUE",  "UFMATCHID: $cid_ufmatch->id");
+                $valid_ufmatchid    = $cid_ufmatch->id;
+            }
+        }
+
+        // B) ZOEK VERVOLGENS VIA BESTAANDE CID_UFMATCH & CRM DRUPAL ACCOUNT
+        if ($drupal_loadbyname_conflict == 0 AND $cid_ufmatch_found         == 0 
+                                             AND $crm_drupal_account_danger == 0
+                                             AND $cms_drupal_account_danger == 0) {
+
+            if ($crm_drupal_account_id == $cid_ufmatch->ufid) {
+                $valid_ufmatchid    = $cid_ufmatch->id;
+                wachthond($extdebug,1, "UFMATCH GEVONDEN DIE KLOPT MET CRM UID", "UFMATCHID: $cid_ufmatch->id");
+            }
+        }
+
+        if ($valid_ufmatchid) {
+            wachthond($extdebug,1, "SET VALID UFMATCHID TO", $valid_ufmatchid);
+        }
+
+        // C) WAT ALS ER ECHT GEEN JUISTE UFMATCH GEVONDEN KAN WORDEN?
+
+        if (empty($valid_ufmatchid) AND $cid_ufmatch_found          == 0 
+                                    AND $crm_drupal_account_danger  == 0) {
+
+            if ($valid_drupalid > 0 ) {
+                $need2create_account = 0;
+                $safe2create_account = 0;
+                $need2create_ufmatch = 1;
+                $safe2create_ufmatch = 1;
+                wachthond($extdebug,2, "WEL DRUPALID / NO VALID UFMATCHID",         "[SAFE2CREATE]");
+                wachthond($extdebug,2, "OPLOSSING > CREATE UFMATCH MET DRUPALID",   $valid_drupalid);
+                wachthond($extdebug,3, "NEED2 CREATE UFMATCH",                      $need2create_ufmatch);
+                wachthond($extdebug,3, "SAFE2 CREATE UFMATCH",                      $safe2create_ufmatch);
+            } else {
+                wachthond($extdebug,2, "GEEN DRUPALID / GEEN VALID UFMATCHID",      "[SAFE2CREATE]");
+                wachthond($extdebug,2, "OPLOSSING > CREATE DRUPALID & UFMATCH",     "[SAFE2CREATE]");               
+            }
+
+
+        } else {
+            wachthond($extdebug,3, "VALID UFMATCHID",           $valid_ufmatchid);
+            wachthond($extdebug,3, "CID UFMATCH FOUND",         $cid_ufmatch_found);
+            wachthond($extdebug,3, "CRM DRUPALACCOUNT DANGER",  $crm_drupal_account_danger);
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.5 C DETERMINE VALID VALUE FOR USERNAME / JOBTITLE", "FIND VALID USERNAME");
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,2, "DRUPAL BYNAME  FOUND",          $drupal_loadbyname_found);
+        wachthond($extdebug,2, "DRUPAL NAME    DANGER",         $crm_drupal_account_danger);
+        wachthond($extdebug,2, "DRUPAL NAME    CONFLICT",       $drupal_loadbyname_conflict);
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "user_name (constructed)",       $user_name);
+
+        if ($crm_externalid > 0) {
+            wachthond($extdebug,3, "crm_drupalnaam (job_title)",$crm_drupalnaam);
+            wachthond($extdebug,3, "cms_drupal_account_name",   $cms_drupal_account_name);
+        }
+        wachthond($extdebug,3, "########################################################################");
+
+        $valid_username = $user_name;       // M61: om te updaten later in job_title
+
+        if (empty($crm_drupalnaam) OR $user_name != $crm_drupalnaam) {
+
+            # SET JOB_TITLE IF MISSING
+            $need2update_jobtitle   = 1;
+            $safe2update_jobtitle   = 1;
+            wachthond($extdebug,2, "SET JOB_TITLE IF MISSING TO",   $user_name);
+        }
+
+        if ($valid_username AND $need2update_jobtitle   AND $safe2update_jobtitle)      {
+            $params_contact['values']['job_title']              = $valid_username;
+            wachthond($extdebug,2, "DOE UPDATE VAN CRMUSERNAME (JOBTITLE) MET USERNAME", $valid_username);
+        }
+
+        wachthond($extdebug,2, "SET VALID USERNAME TO", $valid_username);
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.5 D DETERMINE VALID VALUE FOR CMS MAIL", "FIND VALID USERMAIL");
+//      wachthond($extdebug,2, "DRUPAL BYMAIL  FOUND",          $drupal_loadbymail_found);
+        wachthond($extdebug,2, "user_mail (constructed)",       $user_mail);
+        wachthond($extdebug,2, "crm_drupal_account_name",       $crm_drupal_account_mail);
+        wachthond($extdebug,3, "########################################################################");
+
+        wachthond($extdebug,3, 'email_home_email',              $email_home_email);
+//      wachthond($extdebug,3, 'email_onvr_email',              $email_onvr_email);
+        wachthond($extdebug,3, 'email_plac_email',              $email_plac_email);
+        wachthond($extdebug,3, 'cms_drupal_account_mail',       $cms_drupal_account_mail);
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "### 9.5 D 1 CHECK IF CMS DRUPAL ACCOUNT MAIL IS IN ANY UFMATCH");
+        wachthond($extdebug,3, "########################################################################");     
+
+        $inputtype              = 'cmsmail';
+        $input                  = $cms_drupal_account_mail;
+        $inputname              = "USERMAIL";
+
+        $mail_ufmatch           = find_ufmatch($inputtype, $input)  ?? NULL;
+        $mail_ufmatch_found     = (is_object($mail_ufmatch) == true ?  1 : 0 ); 
+
+        if ($mail_ufmatch->cid > 0) {
+
+            wachthond($extdebug,2, "mail_ufmatch",      $mail_ufmatch);
+            wachthond($extdebug,4, "mail_ufmatch_found",$mail_ufmatch_found);
+
+            wachthond($extdebug,2, "CURRENT CMS_DRUPAL_ACCOUNT_MAIL ZIT IN UFMATCH MET $mail_ufmatch->cid",     "[CHECK WHAT TO DO!]");
+
+        } else {
+
+            $mail_notinany_ufmatch = 1;
+//          $usermail_notinany_ufmatch = 1;
+
+            wachthond($extdebug,2,  "CURRENT CMS_DRUPAL_ACCOUNT_MAIL NIET IN EEN UFMATCH",                      "[SAFE OM TE UPDATEN?]");
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "### 9.5 D 2 CHECK IF CMS EMAIL GEUPDATE MOET WORDEN NAAR PLACEHOLDER MAIL (USER_MAIL)");
+        wachthond($extdebug,3, "########################################################################");     
+
+        wachthond($extdebug,2, "mail_notinany_ufmatch",     $mail_notinany_ufmatch);
+        wachthond($extdebug,2, "mail_notinany_cmsaccount",  $mail_notinany_cmsaccount);
+
+        wachthond($extdebug,2, "cms_drupal_account_mail",   $cms_drupal_account_mail);
+        wachthond($extdebug,2, "email_plac_email",          $email_plac_email);
+        wachthond($extdebug,2, "user_mail",                 $user_mail);
+
+        if ($cms_drupal_account_mail != $email_plac_email AND $email_plac_email == $user_mail) {
+
+            if ($mail_notinany_ufmatch == 1 AND $mail_notinany_cmsaccount == 1) {
+
+                $need2update_drupal_mail    = 1;
+                $safe2update_drupal_mail    = 1;
+                $need2update_ufmatch_mail   = 1;
+                $safe2update_ufmatch_mail   = 1;
+            }
+            wachthond($extdebug,2,  "DRUPAL MAIL != PLACEHOLDER MAAR ZOU DAT WEL MOETEN ZIJN",  $cms_drupal_account_mail);
+            wachthond($extdebug,2,  "DOE UPDATE MAIL IN DRUPAL ACCOUNT & MATCH NAAR ",          $email_plac_email);
+
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "### 9.5 D 3 CHECK IF CMS PLACEHOLDER MAIL GEUPDATE MOET WORDEN NAAR EMAIL_HOME (USER_MAIL)");
+        wachthond($extdebug,3, "########################################################################");     
+
+        wachthond($extdebug,2, "mail_notinany_ufmatch",     $mail_notinany_ufmatch);
+        wachthond($extdebug,2, "mail_notinany_cmsaccount",  $mail_notinany_cmsaccount);
+
+        if ($cms_drupal_account_mail == $email_plac_email AND $email_home_email == $user_mail) {
+
+
+            // M61: dit klopt denk ik niet. In CMS Drupal kunnen er wel meerdere dezelfde emails zijn. 
+            // Alleen kan dat niet in ufmatch tabel
+
+            if ($mail_notinany_ufmatch == 1 AND $mail_notinany_cmsaccount == 1) {
+
+                $need2update_drupal_mail    = 1;
+                $safe2update_drupal_mail    = 1;
+                $need2update_ufmatch_mail   = 1;
+                $safe2update_ufmatch_mail   = 1;
+            }
+
+                $need2update_drupal_mail    = 1;
+                $safe2update_drupal_mail    = 1;
+
+            wachthond($extdebug,2,  "SAFE2  UPDATE DRUPAL_MAIL",    $safe2update_drupal_mail);
+
+            wachthond($extdebug,2,  "DRUPAL MAIL = PLACEHOLDER MAAR ZOU HOME MOETEN ZIJN",      $email_plac_email);
+            wachthond($extdebug,2,  "DOE UPDATE MAIL IN DRUPAL ACCOUNT & MATCH NAAR ",          $email_home_email);
+
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "### 9.5 D 4 CONCLUSIE");
+        wachthond($extdebug,3, "########################################################################");     
+
+        if ($cid_ufmatch->cid > 0 AND $crm_drupal_account_danger    == 0
+                                  AND $cms_drupal_account_danger    == 0
+                                  AND $drupal_loadbyname_conflict   == 0
+                                  AND $rogue_cid_ufmatch            == 0
+                                  AND $mail_ufmatch_found           == 0) {
+
+            // INDIEN ER EEN UFMATCH IS EN DIE IS OP GEEN ENKELE MANIER ROGUE DAN ALTIJD EMAIL UPDATEN
+            $need2update_ufmatch_mail   = 1;
+            $safe2update_ufmatch_mail   = 1;    // M61: TODO: KLOPT DEZE AFWEGING?
+
+            wachthond($extdebug,2,  "OPLOSSING > UPDATE UFMATCH MAIL VAN $mail_ufmatch->name", 
+                                    "NAAR $valid_usermail");
+        }
+
+        $valid_usermail = $user_mail;
+        wachthond($extdebug,2, "SET VALID USERMAIL TO",         $valid_usermail);
+
+/*
+        REPAIR LOGIC:
+
+        9.1 A   CHECK VIA CIVICRM API
+
+                - WHEN CMS EXTERNAL ID HAS NO CONNECTED DRUPAL ACCOUNT
+                    a) drupal uid  != civicrm cmsextid
+                    b) drupal name != civicrm username
+
+        9.1 B   CHECK VIA DRUPAL API
+
+                - WHEN CMS EXTERNAL ID HAS NO CONNECTED DRUPAL ACCOUNT
+
+        -------------------------------------------------------------------------------------------------------------
+
+        DEZE 4 CHECKS INDIEN $crm_drupal_account_id != $crm_externalid
+
+        9.2 A       CHECK VIA DRUPAL  API IF CMSEXTID HAS A ROGUE MATCH (with different CRM account)
+
+        9.2 B       CHECK VIA CIVICRM API IF CMSEXTID HAS A ROGUE MATCH (with different CRM account)
+
+        9.2 C       CHECK IF CONNECTED DRUPALID IS IN USE BY ANOTHER ACCOUNT AS CRMEXTID
+
+        9.2 D       CHECK IF CRMEXTID CAN BE UPDATED WITH FOUND DRUPAL ID
+
+        -------------------------------------------------------------------------------------------------------------
+
+        9.3     - CHECK VIA CIVICRM API IF CID: $contact_id HAS A CONNECTED UF MATCH
+
+        9.4     - CHECK IF CONSTRUCTED MAIL ($user_mail) HAS A CONFLICTING UF MATCH
+
+        9.5     - CHECK IF CONSTRUCTED USERNAME ($user_name) IS ALREADY PRESENT (WITH user_load_by_name)
+
+        -------------------------------------------------------------------------------------------------------------
+
+        9.6     BEPAAL OF DRUPAL ACCOUNT CREATE OF RERPAIR SAFE IS
+
+        $result_ufmatchget_cmsid_count
+        $result_ufmatchget_cid_count
+        $result_ufmatchget_mail_count
+
+        SCENARIO A;
+        1. GEEN CONNECTED DRUPAL ACCOUNT                $crm_drupal_account_found == 0
+        2. GEEN CID UFMATCH / CMSID UF MATCH            $found_cmsid_ufmatch == 0           / $found_cid_ufmatch    == 0
+        3. WEL  MAIL UFMATCH (MET ANDER ACCOUNT)        $found_mail_ufmatch                 / $rogue_cmsid_ufmatch  == 1
+        4. LOADBYNAME LEVERT GEEN DRUPAL ACCOUNT OP     $drupal_loadbyname_found == 0
+
+        OPLOSSSING:
+        1. SAFE OM DRUPAL ACCOUNT AAN TE MAKEN
+        2. SAFE OM DAT TE KOPPELEN MET EEN UF MATCH
+
+*/
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,2, "VALID  DRUPALID",               $valid_drupalid);
+        wachthond($extdebug,2, "VALID  UFMATCH",                $valid_ufmatchid);
+        wachthond($extdebug,2, "VALID  USER_NAME",              $valid_username);
+        wachthond($extdebug,2, "VALID  USER_MAIL",              $valid_usermail);
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,2, "NEED2  CREATE DRUPALACCOUNT",   $need2create_account);
+        wachthond($extdebug,2, "NEED2  UPDATE DRUPALACCOUNT",   $need2update_account);
+        wachthond($extdebug,2, "NEED2  UPDATE DRUPAL_MAIL",     $need2update_drupal_mail);
+//      wachthond($extdebug,2, "NEED2  REPAIR DRUPALACCOUNT",   $need2repair_account);
+        wachthond($extdebug,2, "NEED2  CREATE UFMATCH",         $need2create_ufmatch);
+//      wachthond($extdebug,2, "NEED2  UPDATE UFMATCH",         $need2update_ufmatch);
+        wachthond($extdebug,2, "NEED2  UPDATE UFMATCH_UFID",    $need2update_ufmatch_ufid);
+        wachthond($extdebug,2, "NEED2  UPDATE UFMATCH_MAIL",    $need2update_ufmatch_mail);
+//      wachthond($extdebug,2, "NEED2  REPAIR UFMATCH",         $need2repair_ufmatch);
+        wachthond($extdebug,2, "NEED2  UPDATE EXTERNALID",      $need2update_extid);
+        wachthond($extdebug,2, "NEED2  UPDATE JOBTITLE",        $need2update_jobtitle);
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,2, "SAFE2  CREATE DRUPALACCOUNT",   $safe2create_account);
+        wachthond($extdebug,2, "SAFE2  UPDATE DRUPALACCOUNT",   $safe2update_account);
+        wachthond($extdebug,2, "SAFE2  UPDATE DRUPAL_MAIL",     $safe2update_drupal_mail);
+//      wachthond($extdebug,2, "SAFE2  REPAIR DRUPALACCOUNT",   $safe2repair_account);
+        wachthond($extdebug,2, "SAFE2  CREATE UFMATCH",         $safe2create_ufmatch);
+//      wachthond($extdebug,2, "SAFE2  UPDATE UFMATCH",         $safe2update_ufmatch);
+        wachthond($extdebug,2, "SAFE2  UPDATE UFMATCH_UFID",    $safe2update_ufmatch_ufid);
+        wachthond($extdebug,2, "SAFE2  UPDATE UFMATCH_MAIL",    $safe2update_ufmatch_mail);
+//      wachthond($extdebug,2, "SAFE2  REPAIR UFMATCH",         $safe2repair_ufmatch);
+        wachthond($extdebug,2, "SAFE2  UPDATE EXTERNALID",      $safe2update_extid);
+        wachthond($extdebug,2, "SAFE2  UPDATE JOBTITLE",        $safe2update_jobtitle);
+        wachthond($extdebug,3, "########################################################################");
+
+        if ($safe2update_account == 0 AND $drupal_loadbyname_conflict   == 1) {
+            wachthond($extdebug,1, "SKIPPED UPDATE WANT ACCOUNT MET ZELFDE NAAM", $user_name);
+        }
+        if ($safe2update_account == 0 AND $rogue_ufmatch_found          == 1) {
+            wachthond($extdebug,1, "SKIPPED UPDATE WANT CONFLICTERENDE UF MATCH", $ufmatch_ufid);
+        }
+        if ($safe2update_account == 0 AND $crm_drupal_account_danger    == 1) {
+            wachthond($extdebug,1, "SKIPPED UPDATE WANT CMS NAME ($crm_drupal_account_name) != USERNAME", $user_name);
+        }
+        if ($safe2update_account == 0 AND $crm_drupal_account_danger    == 1) {
+            wachthond($extdebug,1, "SKIPPED UPDATE WANT CMS ID ($crm_drupal_account_id) != EXTID", $crm_externalid);
+        }
+        if ($safe2update_account == 0 AND $drupal_loadbyname_conflict   == 1) {
+            wachthond($extdebug,1, "SKIPPED CREATE VANWEGE DRUPAL ACCOUNT MET ZELFDE NAAM", "$user_name");
+        }
+
+        if ($safe2update_account == 0 AND $rogue_ufmatch_found          == 1) {
+            wachthond($extdebug,1, "SKIPPED CREATE WANT CONFLICTERENDE UF MATCH", $mail_ufmatch->id);
+        }
+
+        if ($safe2update_account == 0 AND $crm_drupal_account_danger    == 1) {
+            wachthond($extdebug,1,  "SKIPPED CREATE WANT CMS NAME ($crm_drupal_account_name) != USER_NAME", 
+                                    "$user_name");
+        }
+
+        if ($safe2update_account == 0 AND $crm_drupal_account_danger    == 1) {
+            wachthond($extdebug,1,  "SKIPPED CREATE WANT CMS ID ($crm_drupal_account_id) != CMSEXTID", 
+                                    "$crm_externalid");
+        }
+
+        ##########################################################################################
+        // CHECK - DETERMINE IF DRUPAL USERNAME OR DRUPAL USERMAIL NEED TO BE UPDATED
+        ##########################################################################################
+
+        if ($valid_drupalid > 0) {
+
+            wachthond($extdebug,3, "########################################################################");
+
+            $existinguser = user_load($valid_drupalid);
+            wachthond($extdebug,3, "existinguser_uid",  $existinguser->uid);
+            wachthond($extdebug,2, "existinguser",      $existinguser);
+
+            $existinguser_name_org  = $existinguser->name;
+            $existinguser_mail_org  = $existinguser->mail;
+            $existinguser_name_new  = $valid_username;
+            $existinguser_mail_new  = $valid_usermail;
+
+            if ($existinguser_name_org != $valid_username) {
+                $need2update_drupal_name = 1;
+                wachthond($extdebug,1, "NEED2UPDATE DRUPAL NAME", "[YES]");
+                wachthond($extdebug,2, "existinguser_name_org",     $existinguser_name_org);
+                wachthond($extdebug,2, "existinguser_name_new",     $existinguser_name_new);
+            } else {
+                wachthond($extdebug,1, "NEED2UPDATE DRUPAL NAME", "[AL OK]");               
+                wachthond($extdebug,3, "existinguser_name_org",     $existinguser_name_org);
+                wachthond($extdebug,3, "existinguser_name_new",     $existinguser_name_new);
+            }
+
+            if ($existinguser_mail_org != $valid_usermail) {
+
+                $need2update_drupal_mail = 1;
+                wachthond($extdebug,1, "NEED2UPDATE DRUPAL MAIL", "[YES]");
+                wachthond($extdebug,2, "existinguser_mail_org",     $existinguser_mail_org);
+                wachthond($extdebug,2, "existinguser_mail_new",     $existinguser_mail_new);
+
+                if ($mail_notinany_cmsaccount == 1) {
+                    $safe2update_drupal_mail = 1;
+                    wachthond($extdebug,1, "MAIL NOT IN OTHER CMS ACCOUNT", "[SAFE2UPDATE = YES]");
+                } else {
+                    wachthond($extdebug,1, "MAIL IN EXISTING CMS ACCOUNT",  "[SAFE2UPDATE = NOT]");
+                }
+
+            } else {
+                wachthond($extdebug,1, "NEED2UPDATE DRUPAL MAIL", "[AL OK]");           
+                wachthond($extdebug,3, "existinguser_mail_org",     $existinguser_mail_org);
+                wachthond($extdebug,3, "existinguser_mail_new",     $existinguser_mail_new);
+            }
+        }
+
+        ##########################################################################################
+        // CHECK - DETERMINE IF UFMATCH NAME OR UFMATCH MAIL NEED TO BE UPDATED
+        ##########################################################################################
+
+        $check_ufmatch          = NULL;
+        $check_ufmatch          = find_ufmatch('contactid', $contact_id) ?? NULL;
+        $check_ufmatch_found    = (is_object($check_ufmatch) == true ?  1 : 0 );
+
+        if ($check_ufmatch_found == 1) {
+
+            wachthond($extdebug,3, "check_ufmatch",                 $check_ufmatch);
+            wachthond($extdebug,3, "check_ufmatch_found",           $check_ufmatch_found);
+
+            $old_ufmatch_mail = $check_ufmatch->name;
+            $new_ufmatch_mail = $valid_usermail;
+
+            if ($old_ufmatch_mail != $new_ufmatch_mail) {
+
+                $need2update_ufmatch_mail = 1;
+                wachthond($extdebug,1, "NEED2UPDATE UFMATCH MAIL", "[YES]");            
+                wachthond($extdebug,3, "old_ufmatch mail (ufmatch name)",   $old_ufmatch_mail);
+                wachthond($extdebug,3, "new_ufmatch mail (ufmatch name)",   $new_ufmatch_mail);
+
+                if ($mail_notinany_ufmatch == 1) {
+                    $safe2update_ufmatch_mail = 1;
+                    wachthond($extdebug,1, "MAIL NOT IN OTHER UFMATCH", "[SAFE2UPDATE = YES]");
+                } else {
+                    wachthond($extdebug,1, "MAIL IN EXISTING UFMATCH",  "[SAFE2UPDATE = NOT]");
+                }
+
+            } else {
+                wachthond($extdebug,1, "NEED2UPDATE UFMATCH MAIL", "[AL OK]");
+                wachthond($extdebug,3, "old_ufmatch mail (ufmatch name)",   $old_ufmatch_mail);
+                wachthond($extdebug,3, "new_ufmatch mail (ufmatch name)",   $new_ufmatch_mail);
+            }
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.6 X CREATE DRUPAL ACCOUNT WHEN NOT FOUND", "[ACCOUNT: $drupal_loadbyname_found / UFMATCH: $drupalufmatch_found]");
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,2, "NEED2  CREATE DRUPALACCOUNT",   "$need2create_account [1]");
+        wachthond($extdebug,2, "SAFE2  CREATE DRUPALACCOUNT",   "$safe2create_account [1]");
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "VALID  DRUPALID",               $valid_drupalid);
+        wachthond($extdebug,3, "VALID  UFMATCH",                $valid_ufmatchid);
+        wachthond($extdebug,3, "VALID  USER_NAME",              $user_name);
+        wachthond($extdebug,3, "VALID  USER_MAIL",              $user_mail);
+        wachthond($extdebug,3, "########################################################################");
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.6 A CREATE DRUPAL ACCOUNT [IF NOT FOUND]",    "[$drupal_loadbyname_found]");
+        wachthond($extdebug,3, "########################################################################");
+
+        $newaccount_drupalid = NULL;
+
+        if ($need2create_account == 1 AND $safe2create_account == 1) {
+
+            $params_newaccount = array(
+                'name'   => $user_name, // M61: TODO hier moet nog een check of niet account met zelfde naam wordt gemaakt (want anders error)
+                'pass'   => $user_pwd,  // note: do not md5 the password
+                'mail'   => $email_plac_email,
+//              'mail'   => $user_mail, // $user_mail,  // M61: dit was placholder email (voor kids) omdat dubbele emails niet konden in drupal
+                'status' => 1,
+                'init'   => $email_plac_email,
+                'roles'  => array(
+                            DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+                            11 => 'custom role',
+                ),
+            );
+
+            if ($user_name AND $user_pwd AND $email_plac_email) {
+                wachthond($extdebug,2, "Drupal user create params", $params_newaccount);
+                // The first parameter is sent blank so a new user is created.
+                $newaccount             = user_save(NULL,           $params_newaccount);
+                $newaccount_drupalid    = $newaccount->uid;
+                if ($newaccount_drupalid > 0) {
+
+                    $valid_drupalid             = $newaccount_drupalid;
+                    $need2update_account        = 1;
+                    $need2update_account_mail   = 1;
+                    $safe2update_account        = 1;
+                    $safe2update_account_mail   = 1;
+
+                    wachthond($extdebug,2, "SAFE2 CREATE DRUPALACCOUNT", $safe2create_account);
+                    wachthond($extdebug,1, "SUCCESS: DRUPAL USER CREATED: $user_name | (valid) drupalid: $newaccount_drupalid");
+                }
+            } else {
+                wachthond($extdebug,3, 'user_name',                     $user_name);
+                wachthond($extdebug,3, 'user_pwd',                      $user_pwd);
+                wachthond($extdebug,3, 'email_plac_email',              $email_plac_email);
+                wachthond($extdebug,1, "SKIPPED CREATE DRUPAL ACCOUNT", "[username / userpwd / emailplac]");
+            }
+
+        } elseif ($need2create_account != 1) {
+            wachthond($extdebug,1, "SKIPPED CREATE DRUPAL ACCOUNT", "[WAS AL OK]");
+        } elseif ($safe2create_account != 1) {
+            wachthond($extdebug,1, "SKIPPED CREATE DRUPAL ACCOUNT", "[NOT SAFE]");
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.6 B VERWIJDER UFMATCH (WANT WIJST NU NAAR LEGE CIVICRM ACCOUNT");
+        wachthond($extdebug,3, "########################################################################");
+
+        // M61: TODO: kan deze ufmatch misschien ook updaten naar juiste info?
+
+        if ($newaccount_drupalid > 0) {
+
+            $check_ufmatch      = NULL;
+            $check_ufmatch      = find_ufmatch('drupalid', $newaccount_drupalid) ?? NULL;
+            wachthond($extdebug,4, "check_ufmatch", $check_ufmatch);
+
+            if ($check_ufmatch->id > 0) {
+
+                $params_ufmatchdelete = [
+                    'id' => $check_ufmatch->id,
+                ];
+                wachthond($extdebug,7, 'params_ufmatchdelete',              $params_ufmatchdelete);
+                $result_ufmatchdelete = civicrm_api3('UFMatch','delete',    $params_ufmatchdelete);
+                wachthond($extdebug,9, 'result_newaccount_ufmatchdelete',   $result_ufmatchdelete);
+
+                wachthond($extdebug,2, "EMPTY UFMATCH DELETED", "UFMATCHID: $check_ufmatch->id");
+
+                $need2create_ufmatch    = 1;
+                $safe2create_ufmatch    = 1;
+            }
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.7 A CREATE DRUPAL UF_MATCH WHEN NOT FOUND", "[AND DRUPALACCOUNT FOUND ($drupal_loadbyname_found)]");
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,2, "NEED2  CREATE UFMATCH",         "$need2create_ufmatch [1]");
+        wachthond($extdebug,2, "SAFE2  CREATE UFMATCH",         "$safe2create_ufmatch [1]");
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "VALID  DRUPALID",               $valid_drupalid);
+        wachthond($extdebug,3, "VALID  UFMATCH",                $valid_ufmatchid);
+        wachthond($extdebug,3, "VALID  USER_NAME",              $user_name);
+        wachthond($extdebug,3, "VALID  USER_MAIL",              $user_mail);
+        wachthond($extdebug,3, "########################################################################");
+
+        if ($need2create_ufmatch == 1 AND $safe2create_ufmatch == 1) {
+
+            ##########################################################################################
+            # CREATE NEW UF MATCH WITH EXISTING DRUPAL USER
+            // M61: veroorzaakt evt koppeling met verkeerd gevonden drupal account !!!
+            ##########################################################################################
+
+            $params_ufmatchcreate = [
+                'checkPermissions' => FALSE,
+                'debug' => $apidebug,
+                'values' => [
+                    'uf_id'         => $valid_drupalid,
+//                  'uf_name'       => $valid_usermail,
+                    'uf_name'       => $email_plac_email,
+                    'contact_id'    => $contact_id,
+                ],
+            ];
+
+            if ($valid_drupalid > 0 AND $user_mail AND $contact_id) {
+                wachthond($extdebug,7, 'params_ufmatchcreate',              $params_ufmatchcreate);
+                $result_ufmatchcreate   = civicrm_api4('UFMatch','create',  $params_ufmatchcreate);
+                wachthond($extdebug,9, 'result_ufmatchcreate',              $result_ufmatchcreate);
+                $valid_ufmatchid        = $result_ufmatchcreate[0]['id'];
+                wachthond($extdebug,2, "NEW UFMATCH CREATED",               "UFMATCHID: $valid_ufmatchid");
+
+                $need2update_ufmatch_mail   = 1;
+                $safe2update_ufmatch_mail   = 1;
+            }
+
+        } elseif ($need2create_ufmatch != 1) {
+            wachthond($extdebug,1, "SKIPPED CREATE UFMATCH", "[WAS AL OK]");
+        } elseif ($safe2create_ufmatch != 1) {
+            wachthond($extdebug,1, "SKIPPED CREATE UFMATCH", "[NOT SAFE]");
+        }       
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.7 B CHECK IF A CURRENT UF MATCH IS NOW PRESENT FOR $displayname");
+        wachthond($extdebug,3, "########################################################################");
+
+        $check_ufmatch          = NULL;
+        $check_ufmatch          = find_ufmatch('contactid', $contact_id) ?? NULL;
+        $check_ufmatch_found    = (is_object($check_ufmatch) == true ?  1 : 0 );
+        wachthond($extdebug,3, "check_ufmatch",                 $check_ufmatch);
+        wachthond($extdebug,3, "check_ufmatch_found",           $check_ufmatch_found);
+
+        if ($check_ufmatch_found == 1) {
+
+            $diag_ufmatch           = diag_ufmatch('contactid', $contact_id, $check_ufmatch, $user_name, $crm_drupalnaam, $crm_externalid);
+            $diag_ufmatch_found     = (is_object($diag_ufmatch) == true ?  1 : 0 );
+            wachthond($extdebug,2, "diag_ufmatch",              $diag_ufmatch);
+            wachthond($extdebug,3, "diag_ufmatch_found",        $diag_ufmatch_found);
+
+            $need2update_extid      = $diag_ufmatch->need2_update_extid;
+            $need2update_jobtitle   = $diag_ufmatch->need2_update_jobtitle;
+            wachthond($extdebug,2, "need2update_extid",         $need2update_extid);
+            wachthond($extdebug,2, "need2update_jobtitle",      $need2update_jobtitle);
+
+            $safe2update_extid      = $diag_ufmatch->safe2_update_extid;
+            $safe2update_jobtitle   = $diag_ufmatch->safe2_update_jobtitle;
+            wachthond($extdebug,2, "safe2update_extid",         $safe2update_extid);
+            wachthond($extdebug,2, "safe2update_jobtitle",      $safe2update_jobtitle);
+
+            // M61: TODO: HIER NOG MEER OBV DE DIAG VD UFMATCH
+            if ($diag_ufmatch_found == 1 AND $diag_ufmatch->cid == $contact_id) {
+                wachthond($extdebug,1, "FIND UF_MATCH VOOR CONTACT_ID $contact_id", "PRIMA! [username: $diag_ufmatch->name]");
+
+                $need2update_ufmatch    = 1;
+                $safe2update_ufmatch    = 1;
+            }
+
+            // M61: DEZE 2 REGELS HIERONDER ZIJN EEN TIJDELIJKE OVERRULE. ZOU UIT DIAG_UFMATCH MOETEN KOMEN
+
+//          $need2update_extid = 1;
+//          $safe2update_extid = 1;
+
+//          if ($valid_drupalid > 0 AND $safe2update_account == 1 AND $need2update_extid == 1 AND $safe2update_extid == 1)  {
+
+            if ($valid_drupalid > 0 AND $need2update_extid == 1 AND $safe2update_extid == 1)    {
+                $params_contact['values']['external_identifier']    = $valid_drupalid;
+                wachthond($extdebug,2, "DOE UPDATE VAN EXTERNAL ID (CMSEXTID) MET DRUPALID", $valid_drupalid);
+            } else {
+
+                wachthond($extdebug,2, "valid_drupalid",            $valid_drupalid);
+                wachthond($extdebug,2, "safe2update_account",       $safe2update_account);
+                wachthond($extdebug,2, "need2update_extid",         $need2update_extid);
+                wachthond($extdebug,2, "safe2update_extid",         $safe2update_extid);
+
+                wachthond($extdebug,2, "DOE geen UPDATE VAN EXTERNAL ID (CMSEXTID) MET DRUPALID", $valid_drupalid);             
+            }
+
+        } else {
+            wachthond($extdebug,2, "FIND UF_MATCH VOOR CONTACT_ID $contact_id",     "ERROR! [NO UFMATCH FOUND]");
+
+            $drupalufmatch_found    = 0;
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "### 9.8 X UPDATE DRUPAL ACCOUNT & UF_MATCH",             "[IF AVAILABLE]");
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.8 A UPDATE DRUPAL ACCOUNT WITH PROPER EMAIL & USERNAME");
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "NEED2  UPDATE DRUPALACCOUNT",   "$need2update_account");
+#       wachthond($extdebug,3, "NEED2  UPDATE UFMATCH",         "$need2create_ufmatch");
+        wachthond($extdebug,2, "SAFE2  UPDATE DRUPALACCOUNT",   "$safe2update_account [1]");
+#       wachthond($extdebug,3, "SAFE2  UPDATE UFMATCH",         "$safe2create_ufmatch");
+        wachthond($extdebug,2, "NEED2  UPDATE DRUPAL_MAIL",     "$need2update_drupal_mail");
+        wachthond($extdebug,2, "SAFE2  UPDATE DRUPAL_MAIL",     "$safe2update_drupal_mail [1]");
+#       wachthond($extdebug,2, "NEED2  UPDATE DRUPAL_NAME",     $need2update_drupal_name);
+#       wachthond($extdebug,2, "SAFE2  UPDATE DRUPAL_NAME",     $safe2update_drupal_name);
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "VALID  DRUPALID",               $valid_drupalid);
+#       wachthond($extdebug,3, "VALID  UFMATCH",                $valid_ufmatchid);
+#       wachthond($extdebug,3, "       USER_NAME",              $user_name);
+#       wachthond($extdebug,3, "       USER_MAIL",              $user_mail);
+        wachthond($extdebug,3, "VALID  USER_NAME",              $valid_username);
+        wachthond($extdebug,3, "VALID  USER_MAIL",              $valid_usermail);   
+        wachthond($extdebug,3, "########################################################################");
+
+        wachthond($extdebug,2, "mail_notinany_ufmatch",         $mail_notinany_ufmatch);
+        wachthond($extdebug,2, "mail_notinany_cmsaccount",      $mail_notinany_cmsaccount);
+
+        $existinguser = user_load($valid_drupalid);
+        wachthond($extdebug,3, "existinguser_uid",  $existinguser->uid);
+        wachthond($extdebug,2, "existinguser",      $existinguser);
+
+        wachthond($extdebug,3, 'email_home_email',              $email_home_email);
+        wachthond($extdebug,3, 'email_plac_email',              $email_plac_email);
+        wachthond($extdebug,3, 'email_onvr_email',              $email_onvr_email);
+
+        wachthond($extdebug,3, 'valid_usermail',                $valid_usermail);
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.8 A 1 DRUPAL NAME");
+        wachthond($extdebug,3, "########################################################################");
+
+        if ($existinguser->uid > 0) {
+
+            ##########################################################################################
+            if ($need2update_drupal_name == 1 AND $safe2update_drupal_name == 1) {
+            ##########################################################################################
+
+                // M61: TODO: EIGENLIJK LOGIC HIERBUITEN PLAATSEN EN DAAR BEOORDELEN IF SAFE 2 UPDATE
+                ######################################################################################
+                # UPDATE ALLEEN ALS DRUPAL NAME OF MAIL GEWIJZIGD IS
+                ######################################################################################
+
+                ######################################################################################
+                ### ONLY NAME
+                ######################################################################################
+ 
+                $existinguser_name_org  = $existinguser->name;
+                $existinguser_name_new  = $valid_username;
+
+                wachthond($extdebug,3, "existinguser_name_org",     $existinguser_name_org);
+                wachthond($extdebug,3, "existinguser_name_new",     $existinguser_name_new);
+
+                if ($existinguser_name_org != $existinguser_name_new) {
+
+                    $existinguser->name     = $existinguser_name_new;       
+                    // always update username (for all roles)
+                    user_save((object) array('uid' => $existinguser->uid), (array) $existinguser);
+
+                    wachthond($extdebug,1,  "SUCCESS: VOOR UID $valid_drupalid CHANGED NAME $ditevent_part_functie", 
+                                                "FROM $existinguser_name_org TO $existinguser_name_new");
+                } else {
+                    wachthond($extdebug,1, "SKIPPED UPDATE DRUPAL TO PROPER NAME",  "[WAS AL OK]");
+                }
+            }
+
+            wachthond($extdebug,3, "########################################################################");
+            wachthond($extdebug,1, "### DRUPAL 9.8 A 2 DRUPAL MAIL");
+            wachthond($extdebug,3, "########################################################################");
+
+            if ($need2update_drupal_mail == 1 AND $safe2update_drupal_mail == 1) {
+
+                ######################################################################################
+                ### ONLY MAIL
+                ######################################################################################
+
+                $existinguser_mail_org  = $existinguser->mail;
+                $existinguser_mail_new  = $valid_usermail;
+
+                wachthond($extdebug,3, "existinguser_mail_org",     $existinguser_mail_org);
+                wachthond($extdebug,3, "existinguser_mail_new",     $existinguser_mail_new);
+
+                if ($existinguser_mail_org != $existinguser_mail_new) {
+
+                    $need2update_drupal_mail = 1;
+
+                    $existinguser->mail     = $existinguser_mail_new;
+                    user_save((object) array('uid' => $existinguser->uid), (array) $existinguser);
+
+                    wachthond($extdebug,1,  "SUCCESS: VOOR UID $valid_drupalid CHANGED MAIL $ditevent_part_functie",
+                                                "FROM $existinguser_mail_org TO $existinguser_mail_new");
+                } else {
+                    wachthond($extdebug,3, "existinguser_mail_org",     $existinguser_mail_org);
+                    wachthond($extdebug,3, "existinguser_mail_new",     $existinguser_mail_new);
+                    wachthond($extdebug,1, "SKIPPED UPDATE DRUPAL TO PROPER MAIL",  "[WAS AL OK]");
+
+                }
+            }
+
+            wachthond($extdebug,3, "########################################################################");
+            wachthond($extdebug,1, "### DRUPAL 9.8 A 3 DRUPAL ROLES");
+            wachthond($extdebug,3, "########################################################################");
+
+            if ($need2update_account == 1 AND $safe2update_account == 1) {
+
+                ######################################################################################
+                ### ONLY ROLES
+                ######################################################################################
+
+                ####################################################
+//              $rol_cms_hoofd      = "ditjaar_hoofdleiding";
+//              $drupal_role_change = drupal_role_change($valid_drupalid, $rol_cms_hoofd, 'ADD');
+                ####################################################
+
+                $existinguser_roles_org         = $existinguser->roles;
+                $existinguser_roles_new         = $existinguser->roles;         // SET INITIAL VALUE
+
+                // VOEG ROL DITJAAR_ALLELEIDING toe aan leidng van dit jaar
+                if (!in_array('ditjaar_alleleiding', $existinguser_roles_org)   AND $ditjaarleidyes == 1)
+                {
+                    $role_to_add = user_role_load_by_name("ditjaar_alleleiding");
+                    $existinguser_roles_new = $existinguser_roles_org + array($role_to_add->rid => $role_to_add->name);
+                    wachthond($extdebug,1,  "Add role 'ditjaar_alleleiding'",   
+                                            "[WANT MEE DIT JAAR]");
+                }
+                // VOEG ROL DITJAAR_KAMPSTAF toe aan kampstaf van dit jaar
+                if (!in_array('ditjaar_kampstaf',    $existinguser_roles_org)   AND $ditjaarstafyes == 1)
+                {
+                    $role_to_add = user_role_load_by_name("ditjaar_kampstaf");
+                    $existinguser_roles_new = $existinguser_roles_org + array($role_to_add->rid => $role_to_add->name);
+                }
+
+                if ($ditjaarleidyes == 0) {
+                    $existinguser_roles_new = array_diff($existinguser_roles_new, ["ditjaar_alleleiding"]);
+                    wachthond($extdebug,1,  "Remove role 'ditjaar_alleleiding'",    
+                                            "[WANT NIET MEE DIT JAAR]");
+                }
+
+                // VOEG ROL DITJAAR_HOOFDLEIDING toe aan hoofdleiding van dit jaar
+                if (!in_array('ditjaar_hoofdleiding',    $existinguser_roles_org)   AND $ditjaarhoofdyes == 1)
+                {
+                    $role_to_add = user_role_load_by_name("ditjaar_hoofdleiding");
+                    $existinguser_roles_new = $existinguser_roles_org + array($role_to_add->rid => $role_to_add->name);
+                } else {
+                    $existinguser_roles_new = array_diff($existinguser_roles_new, ["ditjaar_alleleiding"]);
+                    wachthond($extdebug,1,  "Remove role 'ditjaar_alleleiding'",
+                                            "[WANT NIET MEE DIT JAAR]");                    
+                }
+
+                wachthond($extdebug,3, "existinguser_roles_org",    $existinguser_roles_org);
+                wachthond($extdebug,3, "existinguser_roles_new",    $existinguser_roles_new);
+
+                if ($existinguser_roles_org != $existinguser_roles_new) {
+
+//                  $existinguser->roles    = $existinguser_roles_new;  
+                    // update user_roles met nieuwe waarde
+                    user_save((object) array('uid' => $existinguser->uid), (array) $existinguser);
+
+                    wachthond($extdebug,1,  "SUCCESS: VOOR UID $valid_drupalid CHANGED ROLES $ditevent_part_functie",
+                                            "FROM $existinguser_roles_org TO $existinguser_roles_new");
+                } else {
+                    wachthond($extdebug,1,  "SKIPPED UPDATE DRUPAL TO PROPER ROLES",    "[WAS AL OK]");
+                }
+
+            }
+
+        } else {
+            wachthond($extdebug,1, "9.8 A SKIPPED UPDATE DRUPAL TO PROPER NAME & MAIL",     "[NOT SAFE]");
+        }
+
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.8 B - UPDATE UF_MATCH WITH THE PROPER DRUPALID & EMAIL");
+        wachthond($extdebug,3, "########################################################################");
+//      wachthond($extdebug,2, "NEED2  UPDATE UFMATCH",         "$need2update_ufmatch");
+//      wachthond($extdebug,2, "SAFE2  UPDATE UFMATCH",         "$safe2update_ufmatch");
+        wachthond($extdebug,3, "NEED2  UPDATE UFMATCH MAIL",    "$need2update_ufmatch_mail");
+        wachthond($extdebug,2, "SAFE2  UPDATE UFMATCH MAIL",    "$safe2update_ufmatch_mail [1]");
+        wachthond($extdebug,3, "NEED2  UPDATE UFMATCH UFID",    "$need2update_ufmatch_ufid");
+        wachthond($extdebug,2, "SAFE2  UPDATE UFMATCH UFID",    "$safe2update_ufmatch_ufid [1]");
+        wachthond($extdebug,3, "########################################################################");
+        wachthond($extdebug,3, "VALID  DRUPALID",               $valid_drupalid);
+        wachthond($extdebug,3, "VALID  UFMATCH",                $valid_ufmatchid);
+        wachthond($extdebug,3, "VALID  USER_NAME",              $user_name);
+        wachthond($extdebug,3, "VALID  USER_MAIL",              $user_mail);
+        wachthond($extdebug,3, "########################################################################");
+
+        wachthond($extdebug,3, 'email_home_email',              $email_home_email);
+        wachthond($extdebug,3, 'email_plac_email',              $email_plac_email);
+        wachthond($extdebug,3, 'email_onvr_email',              $email_onvr_email);
+
+        #############################################################################################
+        // M61: TODO URGENT: TIJDELIJK EXTRA BLOCK OMDAT DEZE SECTIE ZORGDE VOOR DB Error: already exists
+        // M61: UPDATE  `civicrm_uf_match`  SET `domain_id` = 1 , `uf_name` = 'hansgea@hekstra.org'   
+        // M61: WHERE (  `civicrm_uf_match`.`id` = 2989 )   [nativecode=1062 ** Duplicate entry 'hansgea@hekstra.org
+
+//      if ($safe2update_ufmatch OR $contact_id) {
+        if (($safe2update_ufmatch OR $contact_id) AND $safe2update_ufmatch_ufid == 1) {
+        #############################################################################################
+
+            $old_ufmatch_ufid = $check_ufmatch->ufid;
+            $new_ufmatch_ufid = $valid_drupalid;
+            $old_ufmatch_mail = $check_ufmatch->name;
+            $new_ufmatch_mail = $valid_usermail;
+
+            $var_ufmatch_mail        = $old_ufmatch_mail;
+            $var_params_ufmatch_mail = ['uf_name',  '=>', $old_ufmatch_mail];
+
+            if ($need2update_ufmatch_mail == 1 AND $safe2update_ufmatch_mail == 1) {
+                if ($old_ufmatch_mail != $new_ufmatch_mail) {
+                    $var_ufmatch_mail        = $new_ufmatch_mail;
+                    $var_params_ufmatch_mail = ['uf_name',  '=>', $new_ufmatch_mail];
+                    wachthond($extdebug,3, "old_ufmatch mail (ufmatch name)",   $old_ufmatch_mail);
+                    wachthond($extdebug,3, "new_ufmatch mail (ufmatch name)",   $new_ufmatch_mail);
+                } else {
+                    // M61: RARE DUMMY-WAARDEN OM DE QUERY SWS TE LATEN SLAGEN
+//                  $var_params_ufmatch_ufid = ['id', '=>', $valid_ufmatchid];          
+                }
+            }
+
+            $var_ufmatch_ufid        = $old_ufmatch_ufid;
+            $var_params_ufmatch_ufid = ['uf_ufid',  '=>', $old_ufmatch_ufid];
+
+            if ($need2update_ufmatch_ufid == 1 AND $safe2update_ufmatch_ufid == 1) {
+                // M61: MOETEN HEEL ZEKER ZIJN VOOR WE UFMATCH UPDATEN EN KOPPELEN AAN ANDER DRUPALID 
+                if ($old_ufmatch_ufid != $new_ufmatch_ufid) {
+                    $var_ufmatch_ufid        = $new_ufmatch_ufid;
+                    $var_params_ufmatch_ufid = ['uf_ufid',  '=>', $new_ufmatch_ufid];
+                    wachthond($extdebug,3, "old_ufmatch  uid (ufmatch ufid)",   $old_ufmatch_ufid);
+                    wachthond($extdebug,3, "new_ufmatch  uid (ufmatch ufid)",   $new_ufmatch_ufid);
+                } else {
+                    // M61: RARE DUMMY-WAARDEN OM DE QUERY SWS TE LATEN SLAGEN
+//                  $var_params_ufmatch_mail = ['id', '=>', $valid_ufmatchid];
+                }
+            }
+
+            // M61: TODO: EIGENLIJK LOGIC HIERBUITEN PLAATSEN EN DAAR BEOORDELEN OF SAFE2UPDATE
+            ##########################################################################################
+            # UPDATE ALLEEN ALS UFMATCH UFID OF MAIL GEWIJZIGD IS
+            ##########################################################################################
+
+            if ($safe2update_ufmatch_mail OR $safe2update_ufmatch_ufid) {
+
+                $params_ufmatchupdate = [
+                    'checkPermissions' => FALSE,
+                    'debug' => $apidebug,
+                    'where' => [
+                               ['id',       '=',    $valid_ufmatchid],
+                    ],
+                    'values' => [
+                        'uf_ufid'   => $var_ufmatch_ufid,
+                        'uf_name'   => $var_ufmatch_mail,
+//                      $var_params_ufmatch_ufid,
+//                      $var_params_ufmatch_mail,
+                    ],
+                ];
+
+                wachthond($extdebug,7,      "params_ufmatchupdate",             $params_ufmatchupdate);
+                if ($valid_ufmatchid AND $valid_usermail AND $valid_drupalid) {
+                    $result_ufmatchupdate = civicrm_api4('UFMatch','update',    $params_ufmatchupdate);
+                    wachthond($extdebug,3,  "result_ufmatchupdate",             $result_ufmatchupdate);
+
+                    if ($old_ufmatch_ufid != $new_ufmatch_ufid) {
+                    wachthond($extdebug,1,  "SUCCESS: CHANGED UFMATCH UFID FOR CID ($contact_id)", 
+                                            "FROM $old_ufmatch_ufid TO $new_ufmatch_ufid");
+                    }
+                    if ($old_ufmatch_mail != $new_ufmatch_mail) {
+                    wachthond($extdebug,1,  "SUCCESS: CHANGED UFMATCH MAIL FOR CID ($contact_id)", 
+                                            "FROM $old_ufmatch_mail TO $new_ufmatch_mail");
+                    }
+                }
+
+            } else {
+                wachthond($extdebug,1, "SKIPPED UPDATE UFMATCH TO PROPER NAME & MAIL",  "[WAS AL OK]");
+            }
+
+        } else {
+            wachthond($extdebug,1, "SKIPPED UPDATE UFMATCH TO PROPER NAME & MAIL",      "[NOT SAFE]");
+        }
+
+        wachthond($extdebug,1, "########################################################################");
+        wachthond($extdebug,1, "### DRUPAL 9.X EINDE DRUPAL ACCOUNT INFO & REPAIR VOOR $displayname");
+
+    } else {
+        wachthond($extdebug,1, "########################################################################");     
+        wachthond($extdebug,1, "### DRUPAL 9.X SKIPPED REPAIR DRUPAL ACCOUNT & UF_MATCH", "[groupID: $groupID] [op: $op]");
+    }
+
+
+
+}
