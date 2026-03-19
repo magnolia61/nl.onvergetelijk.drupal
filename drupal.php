@@ -1684,12 +1684,31 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
         $issues[]   = $message;
         wachthond($extdebug, 1, $message, "[DETECTIE]");
     }
-
+/*
     if ($drupal_loadbyname_orphan == 1) {
         $found_uid  = $account_by_name->id() ?? 'onbekend';
         $message    = "SYSTEEMFOUT: Orphan gedetecteerd. Drupal account '$user_name' (UID: $found_uid) bestaat, maar zonder CiviCRM koppeling.";
         $issues[]   = $message;
         wachthond($extdebug, 1, $message, "[DETECTIE]");
+    }
+*/
+    if ($drupal_loadbyname_orphan == 1) {
+
+        // ########################################################################
+        // ### FIX: Gebruik het juiste object en check op 'null'
+        // ########################################################################
+        
+        $found_uid = (is_object($drupal_loadbyname) && method_exists($drupal_loadbyname, 'id')) 
+                     ? $drupal_loadbyname->id() 
+                     : ($drupal_loadbyname->uid ?? 'onbekend');
+
+        $message   = "SYSTEEMFOUT: Orphan gedetecteerd. Drupal account '$user_name' (UID: $found_uid) bestaat, maar zonder CiviCRM koppeling.";
+        
+        $issues[]  = $message;
+        
+        wachthond($extdebug, 2, "########################################################################");
+        wachthond($extdebug, 1, "### SYSTEEMFOUT: ORPHAN GEVONDEN", "[$user_name / UID: $found_uid]");
+        wachthond($extdebug, 2, "########################################################################");
     }
 
     wachthond($extdebug,3, "########################################################################");
