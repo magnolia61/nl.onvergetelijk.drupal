@@ -1,5 +1,16 @@
 <?php
 
+// === FUNCTIE-INDEX ===
+// Bestand: drupal.php
+// Functies in dit bestand:
+//   drupal_civicrm_config()     Implements hook_civicrm_config().
+//   drupal_civicrm_install()    Implements hook_civicrm_install().
+//   drupal_civicrm_enable()     Implements hook_civicrm_enable().
+//   drupal_civicrm_configure()
+//   drupal_civicrm_username()
+//   add_activity()              Verrijkte add_activity: Combineert Drupal Sync diagnose met Logger-...
+// === EINDE FUNCTIE-INDEX ===
+
 require_once 'drupal.civix.php';
 
 use CRM_Drupal_ExtensionUtil as E;
@@ -66,6 +77,11 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
     $safe2update_ufmatch_ufid   = 0;
     $safe2update_ufmatch_mail   = 0;
     $safe2update_drupal_name    = 0;
+
+    if (empty($usermail)) {
+        wachthond($extdebug, 1, "CRITICAL: Geen usermail meegegeven voor CID $contactid. Afgebroken.");
+        return;
+    }
 
     ### CONSTRUCT A PASSWORD
     $user_pwd       = bin2hex(openssl_random_pseudo_bytes(8));
@@ -1351,7 +1367,9 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
     wachthond($extdebug,3, "########################################################################");
 
     // 1. Bepaal wat het doel-mailadres moet zijn
-    $target_mail = $user_mail; // Gebruik de $user_mail die we hierboven hebben vastgesteld
+    $target_mail        = $user_mail;   // Gebruik de $user_mail die we hierboven hebben vastgesteld
+    $new_ufmatch_mail   = $target_mail; // Voeg dit toe voor de rapportage
+    $valid_usermail     = $target_mail; // Alvast vullen voor de conclusie    
 
     // Bepaal het type voor de logging
     $mail_type = ($target_mail == $email_plac_email) ? "PLACEHOLDER" : "HOME";
@@ -1605,6 +1623,12 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
     wachthond($extdebug,2, "### DRUPAL 5.1 - CHECKING FOR PENDING UPDATES",           "[NEED2UPDATE]");
     wachthond($extdebug,3, "########################################################################");
 
+    // Zorg voor de juiste bron- en doelwaarden voor de rapportage
+    $old_ufmatch_mail   = $check_ufmatch->name  ?? 'onbekend';
+    $old_ufmatch_ufid   = $check_ufmatch->ufid  ?? 'onbekend';
+    $new_ufmatch_mail   = $valid_usermail;
+    $new_ufmatch_ufid   = $valid_drupalid;
+
     $issues = [];
     
     if ($need2update_drupal_mail == 1) {
@@ -1684,12 +1708,31 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
         $issues[]   = $message;
         wachthond($extdebug, 1, $message, "[DETECTIE]");
     }
-
+/*
     if ($drupal_loadbyname_orphan == 1) {
         $found_uid  = $account_by_name->id() ?? 'onbekend';
         $message    = "SYSTEEMFOUT: Orphan gedetecteerd. Drupal account '$user_name' (UID: $found_uid) bestaat, maar zonder CiviCRM koppeling.";
         $issues[]   = $message;
         wachthond($extdebug, 1, $message, "[DETECTIE]");
+    }
+*/
+    if ($drupal_loadbyname_orphan == 1) {
+
+        // ########################################################################
+        // ### FIX: Gebruik het juiste object en check op 'null'
+        // ########################################################################
+        
+        $found_uid = (is_object($drupal_loadbyname) && method_exists($drupal_loadbyname, 'id')) 
+                     ? $drupal_loadbyname->id() 
+                     : ($drupal_loadbyname->uid ?? 'onbekend');
+
+        $message   = "SYSTEEMFOUT: Orphan gedetecteerd. Drupal account '$user_name' (UID: $found_uid) bestaat, maar zonder CiviCRM koppeling.";
+        
+        $issues[]  = $message;
+        
+        wachthond($extdebug, 2, "########################################################################");
+        wachthond($extdebug, 1, "### SYSTEEMFOUT: ORPHAN GEVONDEN", "[$user_name / UID: $found_uid]");
+        wachthond($extdebug, 2, "########################################################################");
     }
 
     wachthond($extdebug,3, "########################################################################");
@@ -2472,8 +2515,8 @@ function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NU
         'van '
     ];
 
-    $last_name_lower    = strtolower(trim($last_name));
-    $last_name_original = trim($last_name);
+    $last_name_lower            = strtolower(trim($last_name ?? ''));
+    $last_name_original         = trim($last_name ?? '');
 
     // CHECK: Alleen prefixen uit de achternaam halen als middle_name nog leeg is
     if (empty($middle_name)) {
@@ -2487,11 +2530,11 @@ function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NU
     } else {
         // middle_name was al bekend (bijv. "de"), 
         // we zorgen alleen dat last_name ook schoon is
-        $last_name = $last_name_original;
+        $last_name              = $last_name_original;
     }
 
     // Clean up
-    $last_name = trim($last_name);
+    $last_name                  = trim($last_name ?? '');
 
 /*
     #############################################################################################
@@ -2559,10 +2602,22 @@ function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NU
         $nick_name      = implode('-', array_map('ucfirst', explode('-', $nick_name)));
         $nick_name      = implode(' ', array_map('ucfirst', explode(' ', $nick_name)));
 */
+/*
         // Use ucwords to handle both hyphens and spaces in a single step
         $first_name     = ucwords(strtolower(trim($first_name)),    '- ');
         $last_name      = ucwords(strtolower(trim($last_name)),     '- ');
-        $nick_name      = ucwords(strtolower(trim($nick_name)),     '- ');        
+        $nick_name      = ucwords(strtolower(trim($nick_name)),     '- ');
+*/
+        // Gebruik ?? '' om te voorkomen dat NULL aan trim wordt doorgegeven
+        $first_name     = ucwords(strtolower(trim($first_name ?? '')),  '- ');
+        $last_name      = ucwords(strtolower(trim($last_name ?? '')),   '- ');
+        $nick_name      = ucwords(strtolower(trim($nick_name ?? '')),   '- ');
+
+        // In de sectie waar speciale tekens worden verwijderd:
+        if ($firstname)  { $firstname   = preg_replace('/[^ \w-]/', '', strtolower(trim($firstname ?? ''))); }
+        if ($middlename) { $middlename  = preg_replace('/[^ \w-]/', '', strtolower(trim($middlename ?? ''))); }
+        if ($lastname)   { $lastname    = preg_replace('/[^ \w-]/', '', strtolower(trim($lastname ?? ''))); }
+        if ($nickname)   { $nickname    = preg_replace('/[^ \w-]/', '', strtolower(trim($nickname ?? ''))); }
 
         # UPDATE civicrm_contact SET `middle_name` = REPLACE(`middle_name`, ' vd ', ' van der ');
         # UPDATE civicrm_contact SET `middle_name` = REPLACE(`middle_name`, ' vd ', ' van der ');
