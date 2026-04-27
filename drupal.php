@@ -1,15 +1,17 @@
 <?php
 
-// === FUNCTIE-INDEX ===
-// Bestand: drupal.php
-// Functies in dit bestand:
-//   drupal_civicrm_config()     Implements hook_civicrm_config().
-//   drupal_civicrm_install()    Implements hook_civicrm_install().
-//   drupal_civicrm_enable()     Implements hook_civicrm_enable().
-//   drupal_civicrm_configure()
-//   drupal_civicrm_username()
-//   add_activity()              Verrijkte add_activity: Combineert Drupal Sync diagnose met Logger-...
-// === EINDE FUNCTIE-INDEX ===
+/**
+ * =======================================================================================
+ * FUNCTIE-INDEX: drupal.php
+ * =======================================================================================
+ *   drupal_civicrm_config()     Implements hook_civicrm_config().
+ *   drupal_civicrm_install()    Implements hook_civicrm_install().
+ *   drupal_civicrm_enable()     Implements hook_civicrm_enable().
+ *   drupal_civicrm_configure()
+ *   drupal_civicrm_username()
+ *   add_activity()              Verrijkte add_activity: Combineert Drupal Sync diagnose met Logger-...
+ * =======================================================================================
+ */
 
 require_once 'drupal.civix.php';
 
