@@ -46,7 +46,7 @@ function drupal_civicrm_enable(): void {
 
 function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_array = NULL, $allpart_array = NULL) {
 
-    $extdebug       = 0;          // 1 = basic // 2 = verbose // 3 = params / 4 = results
+    $extdebug = 'drupal.configure'; // Kanaal voor centrale debug-config; niveau wordt opgezocht in ozk.debug.config.php
     $apidebug       = FALSE;
 
     $extdrupal      = 1;
@@ -68,6 +68,7 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
     $need2update_ufmatch_ufid   = 0;
     $need2update_ufmatch_mail   = 0;
     $need2update_drupal_name    = 0;
+    $need2update_drupal_mail    = FALSE;
 
     $safe2create_account        = 0;
     $safe2update_account        = 0;
@@ -79,11 +80,22 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
     $safe2update_ufmatch_ufid   = 0;
     $safe2update_ufmatch_mail   = 0;
     $safe2update_drupal_name    = 0;
+    $safe2update_drupal_mail    = FALSE;
+
+    $rogue_ufmatch_found        = FALSE;
+    $drupal_loadbyname_orphan   = NULL;
+    $mail_notinany_ufmatch      = NULL;
+    $mail_notinany_cmsaccount   = NULL;
+    $email_home_email           = NULL;
+    $email_onvr_email           = NULL;
 
     if (empty($usermail)) {
         wachthond($extdebug, 1, "CRITICAL: Geen usermail meegegeven voor CID $contactid. Afgebroken.");
         return;
     }
+
+    $drupal_configure_start = microtime(TRUE);
+    watchdog('civicrm_timing', base_microtimer("START drupal_configure [CID: $contactid]"), NULL, WATCHDOG_DEBUG);
 
     ### CONSTRUCT A PASSWORD
     $user_pwd       = bin2hex(openssl_random_pseudo_bytes(8));
@@ -1801,9 +1813,14 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
                 'mail'   => $email_plac_email,
                 'status' => 1,
                 'init'   => $email_plac_email,
+                // Alleen de basisrol meegeven bij aanmaken.
+                // Alle verdere rollen (ooit_deelnemer, ooit_belangstelling, etc.)
+                // worden daarna door acl_civicrm_configure() ingesteld op basis
+                // van de echte CiviCRM-data. Nooit hardcoded rollen hier toevoegen:
+                // rid 11 (ooit_deelnemer) werd hier onterecht aan elk nieuw account
+                // meegegeven, ook aan mensen die enkel belangstelling hadden ingevuld.
                 'roles'  => array(
                     DRUPAL_AUTHENTICATED_RID => 'authenticated user',
-                    11 => 'custom role',
                 ),
             );
 
@@ -1948,7 +1965,7 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
         wachthond($extdebug,2, "safe2update_jobtitle",      $safe2update_jobtitle);
 
         // M61: TODO: HIER NOG MEER OBV DE DIAG VD UFMATCH
-        if ($diag_ufmatch_found == 1 AND $diag_ufmatch->cid == $contact_id) {
+        if ($diag_ufmatch_found == 1 AND ($diag_ufmatch->cid ?? NULL) == $contact_id) {
             wachthond($extdebug,2, "FIND UF_MATCH VOOR CONTACT_ID $contact_id", "PRIMA! [username: $diag_ufmatch->name]");
 
             $need2update_ufmatch    = 1;
@@ -2025,7 +2042,8 @@ wachthond($extdebug,3, "########################################################
     if ($existinguser->uid > 0) {
 
         $edit_fields = [];      // De wachtrij voor wijzigingen
-        $needs_save  = false;   // Vlaggetje: moeten we de database lastigvallen?
+        $needs_save    = false;   // Vlaggetje: moeten we de database lastigvallen?
+        $roles_changed = false;   // Vlaggetje: zijn er rollen gewijzigd (node_access rebuild nodig)?
 
         wachthond($extdebug,3, "########################################################################");
         wachthond($extdebug,2, "### DRUPAL 7.2 CHECK DRUPAL NAME");
@@ -2146,7 +2164,8 @@ wachthond($extdebug,3, "########################################################
 
             if (!empty($diff1) || !empty($diff2)) {
                 $edit_fields['roles'] = $new_roles;
-                $needs_save = true;
+                $needs_save    = true;
+                $roles_changed = true;
                 wachthond($extdebug, 1, "QUEUE: ROL WIJZIGINGEN GEDETECTEERD", "Wordt meegenomen in save.");
             } else {
                 wachthond($extdebug, 1, "SKIPPED UPDATE DRUPAL ROLES", "[AL OK]");
@@ -2163,13 +2182,20 @@ wachthond($extdebug,3, "########################################################
             
             // Drupal 7 user_save($account, $edit) -> Zeer efficiënt
             user_save($existinguser, $edit_fields);
-            
+
             // Werk het lokale object bij voor de rest van het script
             foreach($edit_fields as $key => $val) {
                 $existinguser->$key = $val;
             }
-            
+
             wachthond($extdebug, 1, "SUCCESS: GEGEVENS EN ROLLEN OPGESLAGEN VOOR UID $valid_drupalid");
+
+            // Als rollen gewijzigd zijn: vlag zetten zodat Drupal cron de node_access
+            // herbouwt. Niet synchroon doen — node_access_rebuild() duurt ~35s op deze site.
+            if ($roles_changed) {
+                node_access_needs_rebuild(TRUE);
+                wachthond($extdebug, 1, "NODE ACCESS REBUILD", "Vlag gezet — wordt opgepikt door Drupal cron.");
+            }
 
         } else {
             wachthond($extdebug, 1, "NO CHANGES DETECTED", "DB Save skipped completely (0.00s)");
@@ -2416,11 +2442,14 @@ wachthond($extdebug,3, "########################################################
     wachthond($extdebug,1, "########################################################################");
     wachthond($extdebug,1, "### DRUPAL 8.X EINDE DRUPAL ACCOUNT INFO & REPAIR VOOR $displayname");
     wachthond($extdebug,1, "########################################################################");
+
+    $total_drupal_configure_duur = number_format(microtime(TRUE) - $drupal_configure_start, 3);
+    watchdog('civicrm_timing', base_microtimer("EINDE drupal_configure"), NULL, WATCHDOG_DEBUG);
 }
 
 function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NULL, $lastname = NULL, $displayname = NULL, $nickname = NULL) {
 
-    $extdebug           = 0;          // 1 = basic // 2 = verbose // 3 = params / 4 = results
+    $extdebug = 'drupal.account'; // Kanaal voor centrale debug-config; niveau wordt opgezocht in ozk.debug.config.php
     $apidebug           = FALSE;
 
     $extdrupal          = 1;
@@ -2433,6 +2462,9 @@ function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NU
     $org_last_name      = $lastname;
     $org_displayname    = $displayname;
     $org_nick_name      = $nickname;
+
+    $drupal_username_start = microtime(TRUE);
+    watchdog('civicrm_timing', base_microtimer("START drupal_username [CID: $contactid]"), NULL, WATCHDOG_DEBUG);
 
     wachthond($extdebug,2, "########################################################################");
     wachthond($extdebug,2, "### USERNAME - CONFIGURE PROPER (USER)NAMES",                $displayname);
@@ -2705,6 +2737,9 @@ function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NU
         // 3. REPLACE SPACES WITH UNDERSCORES
         #############################################################################################
 
+        $underscore_middlename  = NULL;
+        $underscore_nickname    = NULL;
+
         if ($firstname)             {   $underscore_firstname   = str_replace(' ', '_', $firstname)     ?? NULL;    }
         if ($middlename)            {   $underscore_middlename  = str_replace(' ', '_', $middlename)    ?? NULL;    }
         if ($lastname)              {   $underscore_lastname    = str_replace(' ', '_', $lastname)      ?? NULL;    }
@@ -2719,6 +2754,9 @@ function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NU
         #############################################################################################
         // 3. REPLACE UNDERSCORES WITH NOTHING
         #############################################################################################
+
+        $nospace_middlename     = NULL;
+        $nospace_nickname       = NULL;
 
         if ($firstname)             {   $nospace_firstname      = str_replace(' ', '', $firstname)      ?? NULL;    }
         if ($middlename)            {   $nospace_middlename     = str_replace(' ', '', $middlename)     ?? NULL;    }
@@ -2837,6 +2875,7 @@ function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NU
         // M61: MAAK DE SWITCH van [firstname.middle.last] NAAR [firstname.middlelast]
         #############################################################################################
 
+        $user_name_chk = $user_name_chk ?? NULL;
         if ($user_name_chk) { $user_name = $user_name_nos; }
 
         wachthond($extdebug,2, "########################################################################");
@@ -2956,6 +2995,14 @@ function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NU
         wachthond($extdebug,2, "### USERNAME 1.4 DIAGNOSE UFMATCH");
         wachthond($extdebug,2, "########################################################################");
 
+        $crm_drupalnaam         = $crm_drupalnaam       ?? NULL;
+        $crm_externalid         = $crm_externalid       ?? NULL;
+        $need2repair_ufmatch    = $need2repair_ufmatch  ?? FALSE;
+        $need2update_ufmatch    = $need2update_ufmatch  ?? FALSE;
+        $need2create_ufmatch    = $need2create_ufmatch  ?? FALSE;
+        $safe2update_ufmatch    = $safe2update_ufmatch  ?? FALSE;
+        $safe2create_ufmatch    = $safe2create_ufmatch  ?? FALSE;
+
         $cid_ufmatch            = NULL;
         $cid_ufmatch_found      = NULL;
         $cid_ufmatch            = find_ufmatch('contactid', $contact_id) ?? NULL;
@@ -3071,6 +3118,9 @@ function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NU
         wachthond($extdebug,1, "########################################################################");
         wachthond($extdebug,1, "### USERNAME 3.0 RETURN VALUES",                           "[$user_name]");
         wachthond($extdebug,1, "########################################################################");
+
+        $total_drupal_username_duur = number_format(microtime(TRUE) - $drupal_username_start, 3);
+        watchdog('civicrm_timing', base_microtimer("EINDE drupal_username"), NULL, WATCHDOG_DEBUG);
 
         return $username_array;
 
