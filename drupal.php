@@ -49,6 +49,20 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
     $extdebug = 'drupal.configure'; // Kanaal voor centrale debug-config; niveau wordt opgezocht in ozk.debug.config.php
     $apidebug       = FALSE;
 
+    // --- RE-ENTRANCY GUARD (per contact, per request) ---
+    // Deze functie doet verderop user_save(). Een Drupal user_save vuurt Drupal user-hooks
+    // → CiviCRM UFMatch/contact-sync → kan deze functie OPNIEUW triggeren voor hetzelfde
+    // contact (ping-pong). Bij een 'rogue' UFMatch convergeert dat niet: de request loopt
+    // ~24s door en eindigt in een HTTP 500 ná de JSON-output, waardoor de bewerk-popup
+    // blijft hangen (de save zelf slaagt wél). Net als stgave/training/terms blokkeren we
+    // hier de geneste her-aanroep. De lock wordt pas gezet ná de early-returns hieronder
+    // (zodat een afgebroken call geen stale lock achterlaat) en aan het einde vrijgegeven.
+    static $running_drupal_configure = [];
+    if (!empty($running_drupal_configure[$contactid])) {
+        wachthond($extdebug, 1, "RE-ENTRY GEBLOKKEERD: drupal_civicrm_configure draait al voor dit contact (voorkomt user_save→sync ping-pong)", "[CID: $contactid]");
+        return;
+    }
+
     $extdrupal      = 1;
     $extwrite       = 1;
 
@@ -116,7 +130,11 @@ function drupal_civicrm_configure($contactid, $displayname, $usermail, $ditjaar_
 
     } else {
         return; // if not, get out of here
-    }    
+    }
+
+    // Vanaf hier committen we aan de zware verwerking (incl. user_save). Zet de
+    // re-entrancy-lock zodat een geneste her-aanroep (via user_save) bovenaan afketst.
+    $running_drupal_configure[$contactid] = TRUE;
 
     wachthond($extdebug,3, "user_mail",         $user_mail);
     wachthond($extdebug,4, "ditjaar_array",     $ditjaar_array);
@@ -2445,6 +2463,10 @@ wachthond($extdebug,3, "########################################################
 
     $total_drupal_configure_duur = number_format(microtime(TRUE) - $drupal_configure_start, 3);
     watchdog('civicrm_timing', base_microtimer("EINDE drupal_configure"), NULL, WATCHDOG_DEBUG);
+
+    // re-entrancy-lock vrijgeven: deze (buitenste) verwerking is klaar. Een latere,
+    // niet-geneste aanroep voor hetzelfde contact mag daarna gewoon weer draaien.
+    unset($running_drupal_configure[$contactid]);
 }
 
 function drupal_civicrm_username($contactid, $firstname = NULL, $middlename = NULL, $lastname = NULL, $displayname = NULL, $nickname = NULL) {
