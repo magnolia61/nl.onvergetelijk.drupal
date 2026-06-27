@@ -2405,9 +2405,12 @@ wachthond($extdebug,3, "########################################################
     wachthond($extdebug,2, "NEED2  UPDATE JOBTITLE",        $need2update_jobtitle);
     wachthond($extdebug,2, "NEED2  UPDATE UFMATCH MAIL",    $need2update_ufmatch_mail);
     wachthond($extdebug,2, "NEED2  UPDATE UFMATCH UFID",    $need2update_ufmatch_ufid);
+    wachthond($extdebug,2, "NEED2  UPDATE DRUPAL MAIL",     $need2update_drupal_mail);
+    wachthond($extdebug,2, "NEED2  UPDATE DRUPAL NAME",     $need2update_drupal_name);
 
-    // Bereken of er nog openstaande herstelacties nodig zijn
-    $pending_issues = $need2update_extid + $need2update_jobtitle + $need2update_ufmatch_ufid + $need2update_ufmatch_mail;
+    // Tel alleen problemen die NIET automatisch opgelost konden worden (STOP: of BLOKKADE: in $issues).
+    // INFO-items zijn al hersteld in deze run en mogen de auto-cleanup niet blokkeren.
+    $pending_issues = count(array_filter($issues, fn($i) => str_starts_with($i, 'STOP:') || str_starts_with($i, 'BLOKKADE:')));
 
     if ($pending_issues == 0) {
         
@@ -2436,7 +2439,7 @@ wachthond($extdebug,3, "########################################################
                     'where' => [['id', '=', $activity['id']]],
                     'values' => [
                         'status_id:name' => 'Completed',
-                        'subject'        => "[HERSTELD] " . $activity['subject'],
+                        'subject'        => "[HERSTELD]",
                         'location'       => "Hersteld op " . date('d-m-Y H:i') . ": Alle gedetecteerde mismatches zijn opgelost.",
                     ],
                 ];
